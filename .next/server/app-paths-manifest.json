@@ -1,7 +1,3 @@
 {
-  "/ai-tutor/page": "app/ai-tutor/page.js",
-  "/api/update-progress/route": "app/api/update-progress/route.js",
-  "/api/ollama-health/route": "app/api/ollama-health/route.js",
-  "/page": "app/page.js",
-  "/api/tutor-chat/route": "app/api/tutor-chat/route.js"
+  "/ai-tutor/page": "app/ai-tutor/page.js"
 }

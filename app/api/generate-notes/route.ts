@@ -18,22 +18,22 @@ export async function POST(request: NextRequest) {
     const analysisPrompt = PROMPTS.CONTENT_ANALYSIS.replace('{{CONTENT}}', content)
     
     // ✅ ENHANCED DEBUGGING: Verify exact content being sent to DeepSeek
-    console.log('🔍 DEBUGGING PDF CONTENT FLOW TO DEEPSEEK:')
+    console.log('🔍 DEBUGGING PDF CONTENT FLOW TO GEMINI:')
     console.log('📄 Content Preview (first 300 chars):', content.substring(0, 300))
     console.log('📊 Content Length:', content.length, 'characters')
     
     // Check if content contains the enhanced text format
     const containsFileProcessingSummary = content.includes('FILE PROCESSING SUMMARY')
-    const containsExtractedContent = content.includes('EXTRACTED CONTENT FOR DEEPSEEK V3 ANALYSIS')
+    const containsExtractedContent = content.includes('EXTRACTED CONTENT FOR GEMINI V3 ANALYSIS')
     console.log('📋 Enhanced Format Check:', { containsFileProcessingSummary, containsExtractedContent })
     
     // Extract just the PDF text portion (between the markers)
-    const extractedContentStart = content.indexOf('EXTRACTED CONTENT FOR DEEPSEEK V3 ANALYSIS:')
-    const extractedContentEnd = content.indexOf('PROCESSING INSTRUCTIONS FOR DEEPSEEK V3:')
+    const extractedContentStart = content.indexOf('EXTRACTED CONTENT FOR GEMINI V3 ANALYSIS:')
+    const extractedContentEnd = content.indexOf('PROCESSING INSTRUCTIONS FOR GEMINI V3:')
     
     if (extractedContentStart !== -1 && extractedContentEnd !== -1) {
       const actualPDFContent = content.substring(
-        extractedContentStart + 'EXTRACTED CONTENT FOR DEEPSEEK V3 ANALYSIS:'.length,
+        extractedContentStart + 'EXTRACTED CONTENT FOR GEMINI V3 ANALYSIS:'.length,
         extractedContentEnd
       ).trim()
       
@@ -50,14 +50,14 @@ export async function POST(request: NextRequest) {
     
     console.log('🎯 Content Analysis Prompt Length:', analysisPrompt.length, 'characters')
     
-    // ✅ FINAL VERIFICATION: Log actual prompt being sent to DeepSeek
-    console.log('🔍 SENDING TO DEEPSEEK: Prompt length =', analysisPrompt.length)
-    console.log('🔍 SENDING TO DEEPSEEK: First 300 chars of prompt:')
+    // ✅ FINAL VERIFICATION: Log actual prompt being sent to Gemini
+    console.log('🔍 SENDING TO GEMINI: Prompt length =', analysisPrompt.length)
+    console.log('🔍 SENDING TO GEMINI: First 300 chars of prompt:')
     console.log(analysisPrompt.substring(0, 300))
     
     const analysisResult = await openRouterClient.generateResponse({
       prompt: analysisPrompt,
-      systemPrompt: 'You are DeepSeek V3, an advanced AI tutor specializing in comprehensive educational content analysis. Provide thorough, accurate analysis based only on the provided content.',
+      systemPrompt: 'You are Google Gemini 2.5 Flash — an advanced educational AI tutor. Your task is to guide students by analyzing content, summarizing key points, simplifying complex ideas, and generating quizzes or flashcards. Always log the exact prompt received and respond with clarity, precision, and usefulness for learning.',
       options: {
         temperature: 0.1,
         top_p: 0.7,
@@ -66,9 +66,9 @@ export async function POST(request: NextRequest) {
     })
     
     // ✅ VERIFICATION: Log DeepSeek's response
-    console.log('🔍 DEEPSEEK RESPONSE: Success =', analysisResult.success)
+    console.log('🔍 GEMINI RESPONSE: Success =', analysisResult.success)
     if (analysisResult.success) {
-      console.log('🔍 DEEPSEEK RESPONSE: First 200 chars =', analysisResult.data?.response?.substring(0, 200))
+      console.log('🔍 GEMINI RESPONSE: First 200 chars =', analysisResult.data?.response?.substring(0, 200))
     }
 
     if (!analysisResult.success) {
@@ -84,7 +84,8 @@ export async function POST(request: NextRequest) {
     
     const notesResult = await openRouterClient.generateResponse({
       prompt: notesPrompt,
-      systemPrompt: 'You are DeepSeek V3, an expert educational AI creating comprehensive study notes. Structure the content for optimal learning and retention.',
+      systemPrompt: 'You are Google Gemini 2.5 Flash, an expert AI tutor creating flashcards for spaced repetition. Based on the given study material, generate clear and concise flashcards (1 concept per card) using various types: concept recall, comparison, application, true/false, and fill-in-the-blank. Format: Q: [question] A: [answer]. Limit to 5–10 cards. Keep them accurate, engaging, and optimized for memory retention.',
+
       options: {
         temperature: 0.1,
         top_p: 0.7,
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
     
     const flashcardsResult = await openRouterClient.generateResponse({
       prompt: flashcardsPrompt,
-      systemPrompt: 'You are DeepSeek V3 creating effective flashcards for spaced repetition learning. Make them engaging and educationally sound.',
+      systemPrompt: 'You are Google Gemini 2.5 Flash creating effective flashcards for spaced repetition learning. Make them engaging and educationally sound.',
       options: {
         temperature: 0.2,
         top_p: 0.8,
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
     // Prepare comprehensive response data
     const responseData = {
       success: true,
-      message: `Successfully generated comprehensive study materials for "${fileName}" using DeepSeek V3`,
+      message: `Successfully generated comprehensive study materials for "${fileName}" using Google Gemini 2.5 Flash`,
       data: {
         analysis: analysisData?.response || 'Analysis completed',
         notes: notesData?.response || 'Notes generated',
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
         metadata: {
           contentLength: content.length,
           processingSteps: ['Content Analysis', 'Notes Generation', 'Flashcards Creation'],
-          model: 'DeepSeek V3',
+          model: 'Google Gemini 2.5 Flash',
           provider: 'OpenRouter'
         }
       }

@@ -15,18 +15,19 @@ function logger(level: string, message: string, data?: any) {
 
 // ✅ CLEAN PDF PROCESSING: No file system access, buffer-only
 async function processPdfBuffer(buffer: Buffer, fileName: string): Promise<string> {
-  // Set environment variables to prevent file system access
-  const originalEnv = {
-    DISABLE_PDF_PARSE_FS: process.env.DISABLE_PDF_PARSE_FS,
-    PDF_PARSE_NO_FILES: process.env.PDF_PARSE_NO_FILES
-  }
-  
-  process.env.DISABLE_PDF_PARSE_FS = 'true'
-  process.env.PDF_PARSE_NO_FILES = 'true'
-
   try {
-    // Dynamic import to avoid build-time bundling issues
-    const pdfParse = await import('pdf-parse')
+    // Import the core PDF parsing functionality directly to avoid debug mode
+    let pdfParse;
+    try {
+      // Try to import the core library directly to avoid debug mode
+      pdfParse = await import('pdf-parse/lib/pdf-parse')
+    } catch (importError) {
+      // Fallback to main library but prevent debug mode by mocking module.parent
+      const originalModule = global.module
+      global.module = { parent: true } as any
+      pdfParse = await import('pdf-parse')
+      global.module = originalModule
+    }
     
     logger('info', '🔍 PDF Processing Started', {
       fileName,
@@ -54,10 +55,6 @@ async function processPdfBuffer(buffer: Buffer, fileName: string): Promise<strin
     const result = await pdfParse.default(buffer, {
       max: 0 // Process all pages
     })
-    
-    // Restore environment
-    process.env.DISABLE_PDF_PARSE_FS = originalEnv.DISABLE_PDF_PARSE_FS
-    process.env.PDF_PARSE_NO_FILES = originalEnv.PDF_PARSE_NO_FILES
 
     if (!result.text || result.text.trim().length === 0) {
       throw new Error('PDF contains no extractable text')
@@ -72,13 +69,10 @@ async function processPdfBuffer(buffer: Buffer, fileName: string): Promise<strin
     return result.text
 
   } catch (error) {
-    // Restore environment on error
-    process.env.DISABLE_PDF_PARSE_FS = originalEnv.DISABLE_PDF_PARSE_FS
-    process.env.PDF_PARSE_NO_FILES = originalEnv.PDF_PARSE_NO_FILES
-    
     logger('error', '❌ PDF Processing Failed', {
       fileName,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
     })
     
     throw new Error(`PDF parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)

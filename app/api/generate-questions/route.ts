@@ -25,7 +25,7 @@ Make the questions clear, educational, and appropriate for the content level. Fo
 
     const result = await openRouterClient.generateResponse({
       prompt: prompt,
-      systemPrompt: 'You are DeepSeek V3, an expert educational AI. Create meaningful questions that test understanding of the provided content.',
+      systemPrompt: 'You are Google Gemini 2.5 Flash, an expert educational AI. Create meaningful questions that test understanding of the provided content.',
       options: {
         temperature: 0.2,
         top_p: 0.8,
@@ -41,7 +41,7 @@ Make the questions clear, educational, and appropriate for the content level. Fo
       success: true,
       response: result.data?.response || 'Questions generated successfully',
       metadata: {
-        model: 'DeepSeek V3',
+        model: 'Google Gemini 2.5 Flash',
         provider: 'OpenRouter',
         fileName: fileName,
         generatedAt: new Date().toISOString()

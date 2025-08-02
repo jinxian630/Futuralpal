@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     const result = await openRouterClient.generateResponse({
       prompt: prompt,
-      systemPrompt: `You are DeepSeek V3, an expert educational assessment AI. Create ${questionType === 'mcq' ? 'multiple-choice' : 'open-ended'} questions that test true understanding, not just memorization. Follow the specified difficulty level precisely.`,
+      systemPrompt: `You are Google Gemini 2.5 Flash, an expert educational assessment AI. Create ${questionType === 'mcq' ? 'multiple-choice' : 'open-ended'} questions that test true understanding, not just memorization. Follow the specified difficulty level precisely.`,
       options: {
         temperature: 0.2,
         top_p: 0.8,
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         difficulty: difficulty,
         questionType: questionType,
-        model: 'DeepSeek V3',
+        model: 'Google Gemini 2.5 Flash',
         provider: 'OpenRouter',
         generatedAt: new Date().toISOString()
       }

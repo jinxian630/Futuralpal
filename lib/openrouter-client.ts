@@ -20,7 +20,7 @@ export interface OpenRouterResponse {
 export class OpenRouterClient {
   private baseUrl = 'https://openrouter.ai/api/v1/chat/completions'
   private apiKey = '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'
-  private model = 'deepseek/deepseek-chat-v3-0324:free'
+  private model = 'google/gemini-2.5-flash'
 
   async generateResponse(params: {
     prompt: string
@@ -131,7 +131,7 @@ export class OpenRouterClient {
       
       const testResponse = await this.generateResponse({
         prompt: 'Hello, are you working correctly? Please respond briefly.',
-        systemPrompt: 'You are DeepSeek V3, a helpful AI assistant. Respond briefly to confirm you are working.',
+        systemPrompt: 'You are Google Gemini 2.5 Flash, a helpful AI assistant. Respond briefly to confirm you are working.',
         options: { max_tokens: 50 }
       })
       

@@ -29,7 +29,7 @@ const AITutorPage = () => {
   }>>([
     {
       role: 'assistant',
-      content: "Hello! I'm your intelligent AI tutor powered by DeepSeek V3. I can help you with:\n\n📚 **Study Notes** - Generate comprehensive notes from your documents\n🎯 **Smart Questions** - Practice with adaptive difficulty levels\n🧠 **Intelligent Feedback** - Get detailed explanations and tips\n📈 **Progress Tracking** - Monitor your learning journey\n\nUpload a text document (PDF, DOCX, TXT, MD) or ask me anything to get started!",
+      content: "Hello! I'm your intelligent AI tutor powered by Google Gemini 2.5 Flash. I can help you with:\n\n📚 **Study Notes** - Generate comprehensive notes from your documents\n🎯 **Smart Questions** - Practice with adaptive difficulty levels\n🧠 **Intelligent Feedback** - Get detailed explanations and tips\n📈 **Progress Tracking** - Monitor your learning journey\n\nUpload a text document (PDF, DOCX, TXT, MD) or ask me anything to get started!",
       type: 'chat'
     }
   ])
@@ -187,7 +187,7 @@ ${savedNotes.flashcards}
       if (file.type.startsWith('image/')) {
         const errorMessage = {
           role: 'assistant' as const,
-          content: `❌ **Image files are not supported**\n\nDeepSeek V3 is a text-only model and cannot process images. Please upload text-based documents instead:\n\n📄 **Supported formats:**\n• PDF documents\n• Word documents (.docx)\n• Text files (.txt)\n• Markdown files (.md)\n\n💡 **Tip:** If you have an image with text, try using OCR software to extract the text first, then upload the text document.`,
+          content: `❌ **Image files are not supported**\n\nGoogle Gemini 2.5 Flash is a text-only model and cannot process images. Please upload text-based documents instead:\n\n📄 **Supported formats:**\n• PDF documents\n• Word documents (.docx)\n• Text files (.txt)\n• Markdown files (.md)\n\n💡 **Tip:** If you have an image with text, try using OCR software to extract the text first, then upload the text document.`,
           type: 'chat' as const
         }
         setConversation(prev => [...prev, errorMessage])
@@ -272,7 +272,7 @@ ${savedNotes.flashcards}
         }
       }
       
-      setGenerationProgress({ step: 2, stepName: 'Analyzing content with DeepSeek V3...', total: 4 })
+      setGenerationProgress({ step: 2, stepName: 'Analyzing content with Google Gemini 2.5 Flash...', total: 4 })
       setGenerationProgress({ step: 3, stepName: 'Generating intelligent study notes...', total: 4 })
       
       const result = await aiAgent.generateStudyNotes(fileContent, selectedFile.name)
@@ -298,7 +298,7 @@ ${flashcards}
 
 ---
 *Generated on: ${new Date(generatedAt).toLocaleString()}*
-*Powered by DeepSeek V3*`
+*Powered by Google Gemini 2.5 Flash*`
         
         const newMessage = {
           role: 'assistant' as const,
@@ -335,7 +335,7 @@ ${flashcards}
         // Show success feedback
         const successMessage = {
           role: 'assistant' as const,
-          content: `✅ ${result.message}\n\n💾 Your notes have been saved and are ready for study!\n\n🧠 **Powered by DeepSeek V3** - Advanced text analysis and educational content generation`,
+          content: `✅ ${result.message}\n\n💾 Your notes have been saved and are ready for study!\n\n🧠 **Powered by Google Gemini 2.5 Flash** - Advanced text analysis and educational content generation`,
           type: 'chat' as const
         }
         setConversation(prev => [...prev, successMessage])
@@ -629,7 +629,7 @@ ${flashcards}
 
 ---
 *Generated on: ${new Date(generatedAt).toLocaleString()}*
-*Powered by DeepSeek V3 via FuturoPal AI Tutor*`
+*Powered by Google Gemini 2.5 Flash via FuturoPal AI Tutor*`
       } else {
         content = `Study Notes for ${fileName}
 
@@ -643,7 +643,7 @@ Quick Reference Cards:
 ${flashcards}
 
 Generated on: ${new Date(generatedAt).toLocaleString()}
-Powered by DeepSeek V3 via FuturoPal AI Tutor`
+Powered by Google Gemini 2.5 Flash via FuturoPal AI Tutor`
       }
 
       const blob = new Blob([content], { type: 'text/plain' })
@@ -689,7 +689,7 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
                     </span>
                   )}
                   <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
-                    DeepSeek V3
+                    Google Gemini 2.5 Flash
                   </span>
                 </h3>
                 <div className="flex space-x-2">
@@ -770,7 +770,7 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
       {/* Enhanced Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">🤖 Intelligent AI Tutor</h1>
-        <p className="text-gray-600">Powered by DeepSeek V3 - Advanced AI learning with adaptive difficulty and personalized feedback</p>
+        <p className="text-gray-600">Powered by Google Gemini 2.5 Flash - Advanced AI learning with adaptive difficulty and personalized feedback</p>
         
         {/* Service Error Banner */}
         {serviceError && (
@@ -802,7 +802,7 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
           <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3">
             <div className="flex items-center">
               <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-              <span className="text-sm text-green-700">✅ DeepSeek V3 AI service connected and ready</span>
+              <span className="text-sm text-green-700">✅ Google Gemini 2.5 Flash AI service connected and ready</span>
             </div>
           </div>
         )}
@@ -819,7 +819,7 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
           </div>
           <div className="flex items-center space-x-1">
             <Brain size={16} className="text-purple-500" />
-            <span>Model: <span className="font-semibold text-purple-600">DeepSeek V3</span></span>
+            <span>Model: <span className="font-semibold text-purple-600">Google Gemini 2.5 Flash</span></span>
           </div>
           {achievements.length > 0 && (
             <div className="flex items-center space-x-1">
@@ -838,7 +838,7 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
             
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-500 transition-colors">
               <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-gray-600 mb-4">Upload text documents - powered by DeepSeek V3!</p>
+              <p className="text-gray-600 mb-4">Upload text documents - powered by Google Gemini 2.5 Flash!</p>
               <div className="text-sm text-gray-500 mb-4 space-y-1">
                 <div>📄 <strong>Documents:</strong> PDF, DOCX, TXT, MD</div>
                 <div>❌ <strong>Not supported:</strong> Images (text-only model)</div>
@@ -889,7 +889,7 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
                         <div className="w-1 h-1 bg-white rounded-full animate-bounce [animation-delay:0.1s]"></div>
                         <div className="w-1 h-1 bg-white rounded-full animate-bounce [animation-delay:0.2s]"></div>
                       </div>
-                      <span>🧠 {generationProgress.stepName || 'Processing with DeepSeek V3...'}</span>
+                      <span>🧠 {generationProgress.stepName || 'Processing with Google Gemini 2.5 Flash...'}</span>
                     </>
                   ) : serviceError ? (
                     <span>⚠️ Service Issue</span>
@@ -950,7 +950,7 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900">FuturoPal AI Tutor</h3>
-                  <p className="text-sm text-green-600">🧠 DeepSeek V3 • Text-Only • Advanced</p>
+                  <p className="text-sm text-green-600">🧠 Google Gemini 2.5 Flash • Text-Only • Advanced</p>
                 </div>
               </div>
             </div>
@@ -1003,7 +1003,7 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
                         <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:0.1s]"></div>
                         <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
                       </div>
-                      <span className="text-purple-700 font-medium">🧠 DeepSeek V3 Processing...</span>
+                      <span className="text-purple-700 font-medium">🧠 Google Gemini 2.5 Flash Processing...</span>
                     </div>
                     
                     {generationProgress.stepName && (
@@ -1015,7 +1015,9 @@ Powered by DeepSeek V3 via FuturoPal AI Tutor`
                         <div className="w-full bg-purple-200 rounded-full h-2">
                           <div 
                             className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500 ease-out progress-bar"
-                            style={{ '--progress-width': `${(generationProgress.step / generationProgress.total) * 100}%` } as React.CSSProperties}
+                            style={{ 
+                              width: `${(generationProgress.step / generationProgress.total) * 100}%` 
+                            }}
                           ></div>
                         </div>
                       </div>

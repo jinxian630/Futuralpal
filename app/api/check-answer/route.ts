@@ -58,7 +58,7 @@ Provide a brief, encouraging study tip to help them understand why ${correctChoi
 
         const studyTipResult = await openRouterClient.generateResponse({
           prompt: studyTipPrompt,
-          systemPrompt: 'You are DeepSeek V3, a supportive AI tutor. Provide an encouraging, brief study tip that helps the student learn from their mistake.',
+          systemPrompt: 'You are Google Gemini 2.5 Flash, a supportive AI tutor. Provide an encouraging, brief study tip that helps the student learn from their mistake.',
           options: {
             temperature: 0.3,
             top_p: 0.8,
@@ -88,7 +88,7 @@ Provide a brief, encouraging study tip to help them understand why ${correctChoi
       // Handle Open-ended Questions using AI
       const difficultyLevel = studentContext?.difficulty || 'medium'
       
-      const evaluationPrompt = `You are DeepSeek V3, an expert educational assessor. Evaluate this student's answer to an open-ended question.
+      const evaluationPrompt = `You are Google Gemini 2.5 Flash, an expert educational assessor. Evaluate this student's answer to an open-ended question.
 
 QUESTION: ${question.question}
 
@@ -119,7 +119,7 @@ CONFIDENCE_BOOST: [motivational message]`
 
       const evaluationResult = await openRouterClient.generateResponse({
         prompt: evaluationPrompt,
-        systemPrompt: 'You are DeepSeek V3, an expert educational assessor. Provide fair, constructive feedback that encourages learning.',
+        systemPrompt: 'You are Google Gemini 2.5 Flash, an expert educational assessor. Provide fair, constructive feedback that encourages learning.',
         options: {
           temperature: 0.2,
           top_p: 0.7,
@@ -197,7 +197,7 @@ CONFIDENCE_BOOST: [motivational message]`
       performanceMessage: performanceMessage,
       nextSteps: nextSteps,
       metadata: {
-        model: 'DeepSeek V3',
+        model: 'Google Gemini 2.5 Flash',
         provider: 'OpenRouter',
         evaluatedAt: new Date().toISOString(),
         questionType: question.type

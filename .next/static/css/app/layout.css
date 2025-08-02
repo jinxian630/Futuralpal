@@ -2286,10 +2286,6 @@ video {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.progress-bar {
-  width: var(--progress-width, 0%);
-}
-
 .hover\:scale-105:hover {
   --tw-scale-x: 1.05;
   --tw-scale-y: 1.05;
@@ -2478,4 +2474,6 @@ video {
   .xl\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-} 
+}
+
+ 
