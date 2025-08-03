@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { 
   WalletProvider, 
   ConnectButton, 
@@ -20,15 +20,31 @@ const WalletInfo: React.FC = () => {
 
   useEffect(() => {
     if (account?.address) {
-      // Redirect to the register page if no wallet is connected
-      router.push(`../personal/dashboard?address=${account.address}`);
+      // Save user to Firestore via API
+      fetch('/api/saveUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: account.address }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            // Redirect to dashboard after successful save
+            router.push(`/personal/dashboard?address=${account.address}`);
+          } else {
+            console.error('Save failed:', data.error);
+          }
+        })
+        .catch((error) => console.error('API call failed:', error));
+
+      // Note: Redirect is inside the fetch callback to ensure save completes
     }
   }, [account, router]);
 
   return (
     <div>
       {account ? (
-        <p>✅ Connected to: {account.address}. Redirecting to dashboard...</p>
+        <p>✅ Connected to: {account.address}. Saving and redirecting...</p>
       ) : (
         <p>🔌 Wallet not connected</p>
       )}
@@ -39,7 +55,7 @@ const WalletInfo: React.FC = () => {
 const App: React.FC = () => {
   const containerStyle: React.CSSProperties = {
     padding: '20px',
-    fontFamily: 'sans-serif'
+    fontFamily: 'sans-serif',
   };
 
   return (
