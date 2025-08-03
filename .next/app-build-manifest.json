@@ -17,11 +17,6 @@
       "static/css/app/register/page.css",
       "static/chunks/app/register/page.js"
     ],
-    "/api/saveUser/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/saveUser/route.js"
-    ],
     "/personal/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -32,6 +27,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/personal/dashboard/page.js"
+    ],
+    "/personal/digital-room/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/digital-room/page.js"
     ],
     "/_not-found/page": [
       "static/chunks/webpack.js",

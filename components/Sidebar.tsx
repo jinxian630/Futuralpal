@@ -28,13 +28,13 @@ const Sidebar = () => {
 
   const navigationItems = [
     { icon: Home, label: 'Dashboard', href: '/' },
-    { icon: GraduationCap, label: 'AI Tutor', href: '/ai-tutor' },
-    { icon: ShoppingCart, label: 'Marketplace', href: '/marketplace' },
-    { icon: Users, label: 'Digital Room', href: '/digital-room' },
-    { icon: BookOpen, label: 'My Courses', href: '/courses' },
-    { icon: Trophy, label: 'Achievements', href: '/achievements' },
-    { icon: MessageSquare, label: 'Messages', href: '/messages' },
-    { icon: Settings, label: 'Settings', href: '/settings' },
+    { icon: GraduationCap, label: 'AI Tutor', href: '/personal/ai-tutor' },
+    { icon: ShoppingCart, label: 'Marketplace', href: '/personal/marketplace' },
+    { icon: Users, label: 'Digital Room', href: '/personal/digital-room' },
+    { icon: BookOpen, label: 'My Courses', href: '/personal/courses' },
+    { icon: Trophy, label: 'Achievements', href: '/personal/achievements' },
+    { icon: MessageSquare, label: 'Messages', href: '/personal/messages' },
+    { icon: Settings, label: 'Settings', href: '/personal/settings' },
   ]
 
   return (
