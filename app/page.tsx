@@ -1,204 +1,249 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Search, Bell, ChevronLeft, ChevronRight, Clock, Users, Award, BookOpen, TrendingUp } from 'lucide-react'
-import StatsCard from '@/components/StatsCard'
-import CourseCard from '@/components/CourseCard'
-import ProgressChart from '@/components/ProgressChart'
-import WelcomeSection from '@/components/WelcomeSection'
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { ChevronDown, Upload, Brain, BarChart3, DollarSign, Home, ShoppingBag, Palette } from 'lucide-react';
 
-const Dashboard = () => {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [currentTime, setCurrentTime] = useState(new Date())
+const FuturopalWebsite = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const stats = [
-    { label: 'NFT Points', value: '111', icon: Award, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
-    { label: 'Digital Room Design', value: '2', icon: Users, color: 'bg-gradient-to-r from-blue-500 to-indigo-500' },
-    { label: 'Courses Completed', value: '11', icon: BookOpen, color: 'bg-gradient-to-r from-green-500 to-teal-500' },
-    { label: 'Courses in Progress', value: '4', icon: TrendingUp, color: 'bg-gradient-to-r from-orange-500 to-red-500' },
-  ]
-
-  const courses = [
-    {
-      id: 1,
-      title: 'Learn Figma',
-      duration: '6h 30min',
-      difficulty: 4.9,
-      icon: '🎨',
-      color: 'bg-gradient-to-r from-pink-500 to-purple-500'
-    },
-    {
-      id: 2,
-      title: 'Analog Photography',
-      duration: '3h 15min',
-      difficulty: 4.7,
-      icon: '📷',
-      color: 'bg-gradient-to-r from-gray-700 to-gray-900'
-    },
-    {
-      id: 3,
-      title: 'Master Instagram',
-      duration: '7h 40min',
-      difficulty: 4.6,
-      icon: '📱',
-      color: 'bg-gradient-to-r from-purple-500 to-pink-500'
-    },
-    {
-      id: 4,
-      title: 'Basics of Drawing',
-      duration: '11h 30min',
-      difficulty: 4.8,
-      icon: '✏️',
-      color: 'bg-gradient-to-r from-yellow-500 to-orange-500'
-    },
-    {
-      id: 5,
-      title: 'Photoshop - Essence',
-      duration: '5h 35min',
-      difficulty: 4.7,
-      icon: '🖼️',
-      color: 'bg-gradient-to-r from-blue-500 to-purple-500'
-    },
-  ]
-
-  const courseFilters = ['All Courses', 'The Newest', 'Top Rated', 'Most Popular']
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-100">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search courses, topics..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 w-80 bg-white rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
+      <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white/98 backdrop-blur-lg shadow-lg' : 'bg-white/95 backdrop-blur-md'
+      }`}>
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-lg">F</span>
+              </div>
+              <span className="font-bold text-slate-800 text-lg">FUTUROPAL</span>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center space-x-8">
+              <button onClick={() => scrollToSection('services')} className="text-slate-700 hover:text-blue-600 font-medium transition-colors">
+                Services
+              </button>
+              <button onClick={() => scrollToSection('marketplace')} className="text-slate-700 hover:text-blue-600 font-medium transition-colors">
+                Marketplace
+              </button>
+              <button onClick={() => scrollToSection('digital-room')} className="text-slate-700 hover:text-blue-600 font-medium transition-colors">
+                Digital Room
+              </button>
+              <Link href="personal/dashboard" className="text-slate-700 hover:text-blue-600 font-medium transition-colors">
+                Login
+              </Link>
+            </div>
+
+            {/* Auth Buttons */}
+            <div className="flex items-center space-x-4">
+              <Link href="register" className="px-6 py-2 border-2 border-blue-500 text-blue-500 rounded-full hover:bg-blue-500 hover:text-white transition-all duration-300">
+                Sign up
+              </Link>
+              <div className="flex items-center space-x-1">
+                <span className="text-slate-700">EN</span>
+                <ChevronDown className="w-4 h-4 text-slate-700" />
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      {/* Hero Section */}
+      <section className="pt-20 pb-20 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Hero Text */}
+            <div className="text-white">
+              <div className="text-orange-300 font-semibold text-sm uppercase tracking-wider mb-4">
+                FUTUROPAL: YOUR AI STUDY BUDDY & DIGITAL LEARNING WORLD
+              </div>
+              <h1 className="text-5xl lg:text-6xl font-bold leading-tight mb-6 text-slate-800">
+                Learn Smarter, 
+                <br />decorate your space, 
+                <br />and earn while you grow
+              </h1>
+              <p className="text-lg leading-relaxed mb-8 text-white/90 max-w-xl">
+                FuturoPal transforms your notes into simple, personalized lessons designed to help you learn faster and smarter. Take adaptive quizzes to test your understanding, earn NFT points as you progress, and unlock items to customize your own digital room.
+              </p>
+              <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-full font-semibold hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                Get Started
+              </button>
+            </div>
+
+            {/* Robot Animation */}
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="w-80 h-80 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center shadow-2xl animate-bounce">
+                  <div className="text-8xl">🤖</div>
+                </div>
+                <div className="absolute -top-4 -right-4 w-8 h-8 bg-yellow-400 rounded-full animate-ping"></div>
+                <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-pink-400 rounded-full animate-pulse"></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Bell className="text-gray-600 hover:text-primary-600 cursor-pointer" size={24} />
-            <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-              1
-            </span>
+      </section>
+
+      {/* Services Section */}
+      <section id="services" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-center text-slate-800 mb-16">
+            We Offer Best Services
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: <Upload className="w-8 h-8" />,
+                title: "Upload Your Notes",
+                description: "Upload any notes or documents. AI reads and breaks them down for you."
+              },
+              {
+                icon: <Brain className="w-8 h-8" />,
+                title: "Learn Smarter, Quiz Smarter",
+                description: "FuturoPal turns the notes into bite-sized lessons and quizzes. Progress from easy to hard – level up when you get it right in a row!"
+              },
+              {
+                icon: <BarChart3 className="w-8 h-8" />,
+                title: "Track Progress Store Certificates",
+                description: "Your learning journey is saved. You can view your past topics, track performance, and store certificates – all in one place."
+              },
+              {
+                icon: <DollarSign className="w-8 h-8" />,
+                title: "Earn NFT Points",
+                description: "With every quiz you complete, earn NFT points. Use them to personalize your experience!"
+              }
+            ].map((service, index) => (
+              <div key={index} className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-slate-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white">
+                  {service.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800 mb-4">{service.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{service.description}</p>
+              </div>
+            ))}
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">J</span>
-            </div>
+        </div>
+      </section>
+
+      {/* Room Section */}
+      <section id="digital-room" className="py-20 bg-gradient-to-r from-purple-500 to-pink-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+          <h2 className="text-4xl font-bold mb-6">Your Room, Your World</h2>
+          <p className="text-xl mb-16 opacity-90">
+            Explore Our Marketplace. Use Your NFT Points To Shop For Decorations And Upgrades.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { icon: <Home className="w-12 h-12" />, title: "Design Your own Digital Room" },
+              { icon: <ShoppingBag className="w-12 h-12" />, title: "NFT Marketplace" },
+              { icon: <Palette className="w-12 h-12" />, title: "Unlock More Exciting Themes" }
+            ].map((room, index) => (
+              <div key={index} className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+                <div className="w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white">
+                  {room.icon}
+                </div>
+                <h4 className="text-lg font-semibold">{room.title}</h4>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Steps Section */}
+      <section id="marketplace" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Steps Text */}
             <div>
-              <p className="text-sm font-medium">Josh</p>
-              <p className="text-xs text-gray-500">Student</p>
+              <h2 className="text-4xl font-bold text-slate-800 mb-8 leading-tight">
+                Make It Yours, Piece By Piece And Share It With The World. 
+                <span className="text-blue-600"> In 3 Easy Steps</span>
+              </h2>
+              <div className="space-y-8">
+                {[
+                  {
+                    step: "1",
+                    title: "Earn NFT Points",
+                    description: "Complete lessons, quizzes, and challenges to earn NFT points.",
+                    color: "from-yellow-400 to-orange-500"
+                  },
+                  {
+                    step: "2", 
+                    title: "Customize Your Room",
+                    description: "Use your NFT points to buy and place items in your digital room.",
+                    color: "from-green-400 to-blue-500"
+                  },
+                  {
+                    step: "3",
+                    title: "Share & Sell", 
+                    description: "Turn creativity into currency – share your room or sell it to others.",
+                    color: "from-purple-400 to-pink-500"
+                  }
+                ].map((item, index) => (
+                  <div key={index} className="flex items-start space-x-6">
+                    <div className={`w-12 h-12 bg-gradient-to-r ${item.color} rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0`}>
+                      {item.step}
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-semibold text-slate-800 mb-2">{item.title}</h4>
+                      <p className="text-slate-600 leading-relaxed">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Phone Mockup */}
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="w-80 h-96 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-6 shadow-2xl">
+                  <div className="w-full h-full bg-white rounded-2xl flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-6xl mb-4">🏠</div>
+                      <div className="text-slate-600 font-medium">Build Your Dream Space</div>
+                      <div className="text-sm text-slate-400 mt-2">Share it and collab with your friends</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-400 rounded-full animate-pulse"></div>
+                <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-blue-400 rounded-full animate-bounce"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Welcome Section */}
-      <WelcomeSection />
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatsCard key={index} {...stat} />
-        ))}
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Courses Section */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">Courses</h2>
-            <div className="flex items-center space-x-2">
-              <button 
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Previous courses"
-                title="Previous courses"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button 
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Next courses"
-                title="Next courses"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Course Filters */}
-          <div className="flex space-x-4 mb-6">
-            {courseFilters.map((filter, index) => (
-              <button
-                key={index}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  index === 0 
-                    ? 'bg-primary-600 text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-
-          {/* Course Cards */}
-          <div className="space-y-4">
-            {courses.map((course) => (
-              <CourseCard key={course.id} {...course} />
-            ))}
-          </div>
+      {/* Footer */}
+      <footer className="bg-slate-800 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-slate-300">
+            All rights reserved FUTUROPAL Built with ❤️ during the Hackathon
+          </p>
         </div>
-
-        {/* Statistics Section */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Your Statistics</h3>
-            <div className="flex space-x-4 mb-4">
-              <button className="text-primary-600 font-medium border-b-2 border-primary-600 pb-2">
-                Learning Hours
-              </button>
-              <button className="text-gray-500 font-medium pb-2">
-                My Courses
-              </button>
-            </div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-600">Weekly</span>
-              <ChevronRight size={16} className="text-gray-400" />
-            </div>
-            <ProgressChart />
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <button className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow">
-                Start AI Tutor Session
-              </button>
-              <button className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow">
-                Generate Quiz
-              </button>
-              <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow">
-                Upload Study Material
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard 
+export default FuturopalWebsite;

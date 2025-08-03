@@ -1,8 +1,11 @@
 'use client'
 
+
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { formatAddress } from '@/lib/formatAddress';
 import { 
   Home, 
   GraduationCap, 
@@ -17,6 +20,9 @@ import {
 } from 'lucide-react'
 
 const Sidebar = () => {
+  const searchParams = useSearchParams();
+  const walletAddress = searchParams.get('address');
+
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -90,6 +96,7 @@ const Sidebar = () => {
             </div>
             <div className="text-sm">
               <p className="font-medium">Josh</p>
+              <p className="text-blue-200">{formatAddress(walletAddress)}</p>
               <p className="text-blue-200">Online</p>
             </div>
           </div>
