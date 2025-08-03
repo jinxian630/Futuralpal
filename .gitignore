@@ -1,1 +1,4 @@
 node_modules
+.env.local
+devmatch-97408-firebase-adminsdk-fbsvc-f1cce8d668.json
+.next/trace
