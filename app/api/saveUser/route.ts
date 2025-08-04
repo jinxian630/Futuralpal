@@ -3,9 +3,8 @@ import admin from 'firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
 import * as dotenv from 'dotenv';
 
-let db: ReturnType<typeof getFirestore>;
-
 export async function POST(req: Request) {
+  // Load environment variables
   const result = dotenv.config({ path: '.env.local' });
   console.log('dotenv config result:', result);
   if (result.error) {
@@ -14,13 +13,15 @@ export async function POST(req: Request) {
   }
   console.log('Loaded environment variables:', process.env);
 
+  // Initialize Firebase if not already initialized
   if (!admin.apps.length) {
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    console.log('Processed private key:', privateKey);
+    if (!privateKey || !privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+      return NextResponse.json({ error: 'Invalid private key format' }, { status: 500 });
+    }
+
     try {
-      const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-      console.log('Processed private key:', privateKey); // Debug the processed key
-      if (!privateKey || !privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-        throw new Error('Invalid private key format');
-      }
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
@@ -29,7 +30,6 @@ export async function POST(req: Request) {
         }),
       });
       console.log('Firebase initialized successfully with app:', admin.app().name);
-      db = getFirestore(admin.app());
     } catch (error) {
       console.error('Firebase initialization error:', {
         message: (error as Error)?.message,
@@ -39,11 +39,18 @@ export async function POST(req: Request) {
     }
   }
 
-  if (!db) {
-    db = getFirestore(admin.app());
+  const db = getFirestore();
+  console.log(db);
+  let address;
+  try {
+    const body = await req.json();
+    address = body.address;
+    console.log('Parsed request body:', body);
+  } catch (error) {
+    console.error('Failed to parse request body:', (error as Error).message);
+    return NextResponse.json({ error: 'Invalid request body', details: (error as Error).message }, { status: 400 });
   }
 
-  const { address } = await req.json();
   console.log('Received address:', address);
   if (!address || typeof address !== 'string') {
     return NextResponse.json({ error: 'Invalid address' }, { status: 400 });
