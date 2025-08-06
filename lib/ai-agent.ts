@@ -7,18 +7,41 @@ export interface AgentResponse {
   // Question generation specific
   question?: Question
   encouragement?: string
+  blocked?: boolean
+  message?: string
   // Answer checking specific
   feedback?: AnswerFeedback
   performanceMessage?: string
   nextSteps?: string
+  fallbackFeedback?: AnswerFeedback
+  updatedSessionState?: any
+  sessionInsights?: any
   // Tutor chat specific
   suggestedActions?: string[]
   followUpEncouragement?: string
   confidenceLevel?: number
   fallbackMessage?: string
+  // Enhanced features
+  gamification?: {
+    xpGained: number
+    newAchievements: Array<{ id: string; name: string; emoji: string }>
+    gamificationSummary: {
+      xpGained: number
+      achievementsCount: number
+      motivationalHighlight: string
+    }
+  }
+  contentAdaptations?: {
+    adaptedContent: string
+    additionalResources: Array<{
+      type: string
+      description: string
+      rationale: string
+    }>
+    interactionSuggestions: string[]
+  }
   // Notes generation specific (legacy fields for backward compatibility)
   notes?: string
-  message?: string
   analysis?: string
   flashcards?: string
   // Enhanced notes generation response structure
@@ -66,76 +89,33 @@ export interface AnswerFeedback {
   confidenceBoost: string
 }
 
-// Enhanced helper function to read and analyze file content (TEXT ONLY)
-export const readFileContent = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    const fileExtension = file.name.split('.').pop()?.toLowerCase()
-    
-    reader.onload = (e) => {
-      try {
-        let content = e.target?.result as string
-        
-        // Add file metadata and analysis context
-        let enhancedContent = `FILE ANALYSIS CONTEXT:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📁 File Name: ${file.name}
-📊 File Size: ${(file.size / 1024).toFixed(2)} KB
-📋 File Type: ${fileExtension?.toUpperCase() || 'Unknown'}
-🕒 Analysis Date: ${new Date().toLocaleString()}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CONTENT TO ANALYZE:
-${content}
-
-ADDITIONAL ANALYSIS INSTRUCTIONS:
-• Extract all mathematical formulas, equations, or numerical data that needs special attention
-• Identify any step-by-step processes, procedures, or workflows mentioned
-• Note any learning aids, mnemonics, or memory techniques suggested in the text
-• Extract any exam-relevant information, key dates, important names, or critical concepts
-• If the content appears to be lecture notes, textbook material, or study guides, structure your analysis accordingly
-• Focus on creating comprehensive text-based study materials
-
-REMEMBER: Students need comprehensive understanding of ALL content for exam success!`
-
-        resolve(enhancedContent)
-      } catch (error) {
-        reject(new Error('Failed to process file content'))
-      }
-    }
-    
-    reader.onerror = (e) => {
-      reject(new Error(`Failed to read file: ${file.name}. Please ensure the file is not corrupted and try again.`))
-    }
-    
-    // Only handle text-based files (no image processing)
-    if (fileExtension && ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension)) {
-      reject(new Error('Image files are not supported. Please upload text-based documents (PDF, DOCX, TXT, MD).'))
-      return
-    }
-    
-    // For text-based files, read as text
-    reader.readAsText(file)
-  })
-}
+// Chat-first learning - no file processing needed
 
 export class AIAgent {
   private baseUrl = '/api'
+  private conversationHistory: Array<{ role: string; content: string; timestamp: string }> = []
 
-  // 1. Study Note Generation System
-  async generateStudyNotes(content: string, fileName: string): Promise<AgentResponse> {
-    try {
-      const { safePostJSON } = await import('./fetch-helper')
-      const result = await safePostJSON(`${this.baseUrl}/generate-notes`, { content, fileName })
-      
-      if (!result.success) {
-        return { success: false, error: result.error || 'Failed to generate study notes' }
-      }
-      
-      return result.data
-    } catch (error) {
-      return { success: false, error: 'Failed to generate study notes' }
+  // Conversation memory management
+  addToHistory(role: 'user' | 'assistant', content: string) {
+    this.conversationHistory.push({
+      role,
+      content,
+      timestamp: new Date().toISOString()
+    })
+    
+    // Keep only last 10 exchanges to maintain context without overwhelming the AI
+    if (this.conversationHistory.length > 20) {
+      this.conversationHistory = this.conversationHistory.slice(-20)
     }
+  }
+
+  getRecentContext(maxMessages: number = 6): string {
+    const recent = this.conversationHistory.slice(-maxMessages)
+    return recent.map(msg => `${msg.role}: ${msg.content}`).join('\n')
+  }
+
+  clearHistory() {
+    this.conversationHistory = []
   }
 
   // 2. Smart Question Generator
@@ -143,14 +123,29 @@ export class AIAgent {
     topic: string, 
     difficulty: 'easy' | 'medium' | 'hard', 
     content: string,
-    previousQuestions: Question[] = []
+    previousQuestions: Question[] = [],
+    studentSession?: any,
+    forceGenerate: boolean = false
   ): Promise<AgentResponse> {
     try {
       const { safePostJSON } = await import('./fetch-helper')
-      const result = await safePostJSON(`${this.baseUrl}/generate-question`, { topic, difficulty, content, previousQuestions })
+      const result = await safePostJSON(`${this.baseUrl}/generate-question`, { 
+        topic, 
+        difficulty, 
+        content, 
+        previousQuestions, 
+        studentSession,
+        forceGenerate 
+      })
       
       if (!result.success) {
-        return { success: false, error: result.error || 'Failed to generate question' }
+        return { 
+          success: false, 
+          error: result.error || 'Failed to generate question',
+          blocked: result.blocked || false,
+          message: result.message,
+          metadata: result.metadata
+        }
       }
       
       return result.data
@@ -163,11 +158,19 @@ export class AIAgent {
   async checkAnswer(
     question: Question,
     userAnswer: string,
-    studentContext?: any
+    studentContext?: any,
+    studentSession?: any,
+    responseStartTime?: number
   ): Promise<AgentResponse> {
     try {
       const { safePostJSON } = await import('./fetch-helper')
-      const result = await safePostJSON(`${this.baseUrl}/check-answer`, { question, userAnswer, studentContext })
+      const result = await safePostJSON(`${this.baseUrl}/check-answer`, { 
+        question, 
+        userAnswer, 
+        studentContext, 
+        studentSession,
+        responseStartTime
+      })
       
       if (!result.success) {
         return { success: false, error: result.error || 'Failed to check answer' }
@@ -179,18 +182,45 @@ export class AIAgent {
     }
   }
 
-  // 4. Q&A Tutoring Bot
+  // 4. Q&A Tutoring Bot with Enhanced Context
   async askTutor(
     question: string,
     studyContext: string,
-    studentHistory?: any
+    studentHistory?: any,
+    enhancedOptions?: {
+      userId?: string
+      sessionId?: string
+      teachingStyle?: string
+      conversationHistory?: Array<{ role: string; content: string; timestamp: string }>
+      userPreferences?: any
+      enableGamification?: boolean
+      enableEmotionalIntelligence?: boolean
+    }
   ): Promise<AgentResponse> {
     try {
+      // Add question to conversation history
+      this.addToHistory('user', question)
+      
+      // Get recent conversation context
+      const conversationContext = this.getRecentContext()
+      
       const { safePostJSON } = await import('./fetch-helper')
-      const result = await safePostJSON(`${this.baseUrl}/tutor-chat`, { question, studyContext, studentHistory })
+      const result = await safePostJSON(`${this.baseUrl}/tutor-chat`, { 
+        question, 
+        studyContext, 
+        studentHistory,
+        conversationContext,
+        // Enhanced parameters
+        ...enhancedOptions
+      })
       
       if (!result.success) {
         return { success: false, error: result.error || 'Failed to get tutor response' }
+      }
+      
+      // Add response to conversation history
+      if (result.data.response) {
+        this.addToHistory('assistant', result.data.response)
       }
       
       return result.data
@@ -218,29 +248,145 @@ export class AIAgent {
     }
   }
 
-  // Quick Reference Cards Generator
-  async generateFlashcards(notes: string): Promise<AgentResponse> {
+  // 🔁 Get More Examples
+  async getMoreExamples(input: string, topic?: string, context?: string): Promise<AgentResponse> {
     try {
       const { safePostJSON } = await import('./fetch-helper')
-      const result = await safePostJSON(`${this.baseUrl}/generate-flashcards`, { notes })
+      const result = await safePostJSON(`${this.baseUrl}/generate-examples`, { 
+        input, 
+        topic, 
+        context 
+      })
       
       if (!result.success) {
-        return { success: false, error: result.error || 'Failed to generate flashcards' }
+        return { 
+          success: false, 
+          error: result.error || 'Failed to generate examples',
+          fallbackMessage: (result.data as any)?.fallbackMessage || 'Please try again later'
+        }
       }
       
-      return result.data
+      return {
+        success: true,
+        response: result.data?.examples || result.data?.response || 'Examples generated successfully',
+        metadata: result.data?.metadata || {}
+      }
     } catch (error) {
-      return { success: false, error: 'Failed to generate flashcards' }
+      return { success: false, error: 'Failed to generate examples' }
     }
+  }
+
+  // 🧠 Create Flashcards
+  async createFlashcards(input: string, topic?: string, context?: string): Promise<AgentResponse> {
+    try {
+      const { safePostJSON } = await import('./fetch-helper')
+      const result = await safePostJSON(`${this.baseUrl}/generate-flashcards`, { 
+        input, 
+        topic, 
+        context 
+      })
+      
+      if (!result.success) {
+        return { 
+          success: false, 
+          error: result.error || 'Failed to create flashcards',
+          fallbackMessage: (result.data as any)?.fallbackMessage || 'Please try again later'
+        }
+      }
+      
+      return {
+        success: true,
+        response: result.data?.flashcards || result.data?.response || 'Flashcards created successfully',
+        flashcards: result.data?.flashcards || result.data?.response || 'Flashcards created successfully',
+        metadata: result.data?.metadata || {}
+      }
+    } catch (error) {
+      return { success: false, error: 'Failed to create flashcards' }
+    }
+  }
+
+  // 📝 Generate Practice Questions
+  async generatePracticeQuestions(
+    input: string, 
+    topic?: string, 
+    context?: string, 
+    difficulty: 'easy' | 'medium' | 'hard' = 'medium',
+    questionCount: number = 5
+  ): Promise<AgentResponse> {
+    try {
+      const { safePostJSON } = await import('./fetch-helper')
+      const result = await safePostJSON(`${this.baseUrl}/generate-practice-questions`, { 
+        input, 
+        topic, 
+        context,
+        difficulty,
+        questionCount
+      })
+      
+      if (!result.success) {
+        return { 
+          success: false, 
+          error: result.error || 'Failed to generate practice questions',
+          fallbackMessage: (result.data as any)?.fallbackMessage || 'Please try again later'
+        }
+      }
+      
+      return {
+        success: true,
+        response: result.data?.practiceQuestions || result.data?.response || 'Practice questions generated successfully',
+        metadata: result.data?.metadata || {}
+      }
+    } catch (error) {
+      return { success: false, error: 'Failed to generate practice questions' }
+    }
+  }
+
+  // 📋 Generate Step-by-Step Guide
+  async generateStepByStepGuide(
+    topic: string, 
+    studyContext?: string, 
+    customPrompt?: string,
+    difficulty: 'easy' | 'medium' | 'hard' = 'medium'
+  ): Promise<AgentResponse> {
+    try {
+      const { safePostJSON } = await import('./fetch-helper')
+      const result = await safePostJSON(`${this.baseUrl}/generate-step-by-step`, { 
+        topic, 
+        studyContext, 
+        customPrompt,
+        difficulty
+      })
+      
+      if (!result.success) {
+        return { 
+          success: false, 
+          error: result.error || 'Failed to generate step-by-step guide',
+          fallbackMessage: (result.data as any)?.fallbackMessage || 'Please try again later'
+        }
+      }
+      
+      return {
+        success: true,
+        response: result.data?.stepByStepGuide || result.data?.response || 'Step-by-step guide generated successfully',
+        metadata: result.data?.metadata || {}
+      }
+    } catch (error) {
+      return { success: false, error: 'Failed to generate step-by-step guide' }
+    }
+  }
+
+  // Legacy method - kept for backward compatibility
+  async generateFlashcards(notes: string): Promise<AgentResponse> {
+    return this.createFlashcards(notes)
   }
 }
 
 // Export singleton instance
 export const aiAgent = new AIAgent()
 
-// Prompt templates - Updated for DeepSeek V3 (text-only)
+// Prompt templates - Updated for GPT-4o (text and vision)
 export const PROMPTS = {
-  CONTENT_ANALYSIS: `You are DeepSeek V3, an advanced AI tutor specializing in comprehensive content analysis and educational support.
+  CONTENT_ANALYSIS: `You are GPT-4o, an advanced AI tutor specializing in comprehensive content analysis and educational support.
 
 CRITICAL INSTRUCTIONS:
 - You MUST analyze ONLY the provided content below
@@ -266,13 +412,13 @@ REQUIRED ANALYSIS STRUCTURE:
 6. **DIFFICULTY ASSESSMENT**: [Beginner/Intermediate/Advanced]
 7. **STUDY PRIORITIES**: [What students should focus on most]
 
-DEEPSEEK INTELLIGENCE GUIDELINES:
+GPT-4o INTELLIGENCE GUIDELINES:
 - Be precise and evidence-based
 - Connect concepts logically
 - Identify prerequisite knowledge needed
 - Suggest effective study strategies based on content type`,
 
-  COMPREHENSIVE_NOTES: `You are DeepSeek V3 creating intelligent study notes. Your task is to transform the provided content into comprehensive, learner-friendly notes.
+  COMPREHENSIVE_NOTES: `You are GPT-4o creating intelligent study notes. Your task is to transform the provided content into comprehensive, learner-friendly notes.
 
 INSTRUCTIONS:
 - Read and analyze EVERY word of the content below
@@ -325,7 +471,7 @@ QUALITY STANDARDS:
 - Optimize for retention and understanding
 - Include specific examples from the material`,
 
-  MCQ_QUESTION: `You are DeepSeek V3, an expert educational assessment AI. Create an intelligent multiple-choice question.
+  MCQ_QUESTION: `You are GPT-4o, an expert educational assessment AI. Create an intelligent multiple-choice question.
 
 ASSESSMENT INSTRUCTIONS:
 - Analyze the content thoroughly to create meaningful questions
@@ -382,7 +528,7 @@ QUALITY CHECKLIST:
 ✓ Explanation enhances understanding
 ✓ Language is clear and accessible`,
 
-  OPEN_ENDED_QUESTION: `You are DeepSeek V3 creating advanced analytical questions for deep learning assessment.
+  OPEN_ENDED_QUESTION: `You are GPT-4o creating advanced analytical questions for deep learning assessment.
 
 ADVANCED QUESTIONING INSTRUCTIONS:
 - Create questions that test critical thinking and synthesis
@@ -456,7 +602,7 @@ QUALITY STANDARDS:
 📘 Study tip: {{STUDY_TIP}}
 🚀 {{CONFIDENCE_BOOST}}`,
 
-  TUTOR_CHAT: `You are DeepSeek V3, an advanced AI tutor for FuturoPal with comprehensive educational capabilities.
+  TUTOR_CHAT: `You are GPT-4o, an advanced AI tutor for FuturoPal with comprehensive educational capabilities.
 
 TUTORING PERSONA:
 - Patient, encouraging, and intellectually curious
@@ -518,7 +664,7 @@ COMMUNICATION STANDARDS:
 - Connect to their learning journey
 - Maintain intellectual rigor while being accessible`,
 
-  FLASHCARDS: `You are DeepSeek V3 creating intelligent flashcards with advanced learning support capabilities.
+  FLASHCARDS: `You are GPT-4o creating intelligent flashcards with advanced learning support capabilities.
 
 FLASHCARD DESIGN PRINCIPLES:
 - Use spaced repetition optimization

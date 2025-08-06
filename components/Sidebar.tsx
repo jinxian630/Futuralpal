@@ -19,6 +19,8 @@ import {
   X
 } from 'lucide-react'
 
+
+
 const Sidebar = () => {
   const searchParams = useSearchParams();
   const walletAddress = searchParams.get('address');

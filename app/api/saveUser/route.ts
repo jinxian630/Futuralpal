@@ -13,6 +13,12 @@ export async function POST(req: Request) {
   }
   console.log('Loaded environment variables:', process.env);
 
+  // Safe way to log existing apps
+  console.log('Existing apps:', 
+    admin.apps
+      .filter(app => app !== null)  // Filter out null entries
+      .map(app => app.name)         // Now safe to access .name
+  );
   // Initialize Firebase if not already initialized
   if (!admin.apps.length) {
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
@@ -62,6 +68,7 @@ export async function POST(req: Request) {
       address,
       name: "User",
       admin: false,
+      nft_points: 0,
     });
     console.log(`User saved for address: ${address} at docRef: ${docRef.path}`);
     return NextResponse.json({ success: true }, { status: 200 });

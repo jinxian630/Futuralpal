@@ -1,139 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PROMPTS } from '@/lib/ai-agent'
-import { openRouterClient } from '@/lib/openrouter-client'
+import { openai } from '@/lib/openai-config'
 
-// 🧠 Student Learning Analysis Functions
-function analyzeStudentNeeds(question: string, studentHistory: any) {
-  const questionLower = question.toLowerCase()
-  
-  // Detect learning intent
-  let intent = 'general'
-  if (questionLower.includes('explain') || questionLower.includes('understand')) intent = 'explanation'
-  else if (questionLower.includes('practice') || questionLower.includes('quiz')) intent = 'practice'
-  else if (questionLower.includes('help') || questionLower.includes('confused')) intent = 'support'
-  else if (questionLower.includes('memorize') || questionLower.includes('remember')) intent = 'memorization'
-  
-  // Detect if extra patience is needed
-  const patienceKeywords = ['confused', "don't understand", 'struggling', 'difficult', 'hard', 'help me', 'lost']
-  const needsExtraPatience = patienceKeywords.some(keyword => questionLower.includes(keyword))
-  
-  // Analyze learning patterns from history
-  let patterns = 'First interaction'
-  if (studentHistory) {
-    patterns = 'Regular learner with consistent engagement'
-  }
-  
-  return {
-    intent,
-    needsExtraPatience,
-    patterns
-  }
-}
-
-// 🌡️ Dynamic Temperature Control
-function getDynamicTemperature(question: string): number {
-  const questionLower = question.toLowerCase()
-  
-  if (questionLower.includes('brainstorm') || questionLower.includes('creative') || questionLower.includes('ideas')) {
-    return 0.7 // Higher creativity
-  } else if (questionLower.includes('explain') || questionLower.includes('define') || questionLower.includes('formula')) {
-    return 0.2 // Lower for precision
-  } else if (questionLower.includes('example') || questionLower.includes('practice')) {
-    return 0.4 // Moderate for variety
-  }
-  
-  return 0.3 // Default balanced temperature
-}
-
-// 🏷️ Topic Tagging
-function extractTopicTags(question: string, studyContext?: string): string[] {
-  const questionLower = question.toLowerCase()
-  const tags = ['General']
-  
-  // Subject detection
-  const subjects = {
-    'Math': ['math', 'algebra', 'calculus', 'geometry', 'arithmetic', 'equation', 'formula'],
-    'Science': ['science', 'biology', 'chemistry', 'physics', 'experiment', 'hypothesis'],
-    'History': ['history', 'historical', 'century', 'war', 'ancient', 'civilization'],
-    'Language': ['grammar', 'writing', 'literature', 'essay', 'vocabulary', 'language'],
-    'Programming': ['code', 'programming', 'algorithm', 'function', 'variable', 'syntax']
-  }
-  
-  for (const [subject, keywords] of Object.entries(subjects)) {
-    if (keywords.some(keyword => questionLower.includes(keyword))) {
-      tags.push(subject)
-    }
-  }
-  
-  if (studyContext && !tags.includes(studyContext)) {
-    tags.push(studyContext)
-  }
-  
-  return tags.filter(tag => tag !== 'General').length > 0 ? 
-    tags.filter(tag => tag !== 'General') : ['General']
-}
-
-// 💖 Adaptive Encouragement
-function getAdaptiveEncouragement(studentAnalysis: any, topicTags: string[]): string[] {
-  const baseEncouragement: string[] = [
-    "You're doing great! Keep up the wonderful learning momentum! 🌟",
-    "Excellent question! I'm here to support your learning journey! 💪",
-    "I love your curiosity! What would you like to explore next? 🚀"
-  ]
-  
-  const patienceEncouragement: string[] = [
-    "Take your time - learning is a journey, not a race! I'm here to help every step of the way! 🌱",
-    "You're asking great questions! Remember, every expert was once a beginner. Keep going! 💙",
-    "It's completely normal to find this challenging. Let's break it down together - you've got this! 🤝",
-    "Learning takes patience, and you're showing great determination! I'm proud of your effort! ⭐"
-  ]
-  
-  if (studentAnalysis.needsExtraPatience) {
-    return patienceEncouragement
-  }
-  
-  return baseEncouragement
-}
-
-// 📊 Enhanced Confidence Assessment
-function assessStudentConfidence(question: string, studentHistory: any, studentAnalysis: any): number {
-  const questionLower = question.toLowerCase()
-  let confidenceLevel = 75 // Default
-  
-  // Negative confidence indicators
-  if (questionLower.includes('confused') || questionLower.includes("don't understand") || 
-      questionLower.includes('lost') || questionLower.includes('struggling')) {
-    confidenceLevel = 40
-  } else if (questionLower.includes('help') || questionLower.includes('difficult')) {
-    confidenceLevel = 55
-  }
-  
-  
-  // Positive confidence indicators
-  else if (questionLower.includes('sure') || questionLower.includes('confident') || 
-           questionLower.includes('ready') || questionLower.includes('understand')) {
-    confidenceLevel = 90
-  } else if (questionLower.includes('practice') || questionLower.includes('try')) {
-    confidenceLevel = 80
-  }
-  
-  return confidenceLevel
-}
-
-// 🎯 Patience Level Calculator
-function calculatePatienceNeeded(confidenceLevel: number, studentAnalysis: any): string {
-  if (confidenceLevel < 50 || studentAnalysis.needsExtraPatience) {
-    return 'High - Extra patience and encouragement needed'
-  } else if (confidenceLevel < 70) {
-    return 'Medium - Standard supportive approach'
-  } else {
-    return 'Low - Student is confident, can provide more challenge'
-  }
-}
+// Enhanced AI Tutor imports
+import { 
+  analyzeStudentNeeds, 
+  getDynamicTemperature, 
+  extractTopicTags, 
+  getAdaptiveEncouragement, 
+  assessStudentConfidence, 
+  calculatePatienceNeeded 
+} from '@/lib/learning-utils'
+import { 
+  analyzeSentimentAndTone, 
+  generateEmotionalResponse, 
+  integrateEmotionWithLearningStyle 
+} from '@/lib/emotion-detection'
+import { 
+  detectLearningStyle, 
+  adaptContentForLearningStyle 
+} from '@/lib/learning-style-detection'
+import { 
+  selectOptimalTeachingStyle, 
+  enhancePromptWithTeachingStyle 
+} from '@/lib/teaching-style-personalizer'
+import { 
+  calculateTutorXP, 
+  checkTutorAchievements, 
+  generateMotivationalResponse, 
+  buildGamificationContext, 
+  integrateProgressWithResponse 
+} from '@/lib/gamification-integration'
+import { StudentHistory, TeachingStyle, EmotionalState } from '@/lib/types/student'
 
 export async function POST(request: NextRequest) {
   try {
-    const { question, studyContext, studentHistory, language, customSystemPrompt } = await request.json()
+    const { 
+      question, 
+      studyContext, 
+      studentHistory, 
+      language, 
+      customSystemPrompt,
+      // Enhanced parameters
+      userId = 'default',
+      sessionId,
+      teachingStyle,
+      conversationHistory = [],
+      userPreferences = {},
+      enableGamification = true,
+      enableEmotionalIntelligence = true
+    } = await request.json()
 
     if (!question) {
       return NextResponse.json({
@@ -142,8 +58,37 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Analyze student's learning patterns and needs
+    // 🧠 Enhanced Student Analysis with Emotional Intelligence
     const studentAnalysis = analyzeStudentNeeds(question, studentHistory)
+    
+    // Emotional intelligence analysis
+    let emotionalAnalysis: any = null
+    let learningStyleAnalysis: any = null
+    let teachingStyleSelection: any = null
+    
+    if (enableEmotionalIntelligence) {
+      emotionalAnalysis = analyzeSentimentAndTone(question, {
+        previousEmotions: studentHistory?.emotionalPattern?.emotionHistory?.map((e: any) => e.emotion),
+        sessionDuration: userPreferences.sessionDuration,
+        recentPerformance: studentHistory?.recentPerformance
+      })
+      
+      // Learning style detection
+      learningStyleAnalysis = detectLearningStyle(
+        question,
+        conversationHistory,
+        userPreferences.behaviorPatterns
+      )
+      
+      // Teaching style selection
+      teachingStyleSelection = selectOptimalTeachingStyle({
+        studentPreference: teachingStyle,
+        emotionalState: emotionalAnalysis.primaryEmotion,
+        learningStyle: learningStyleAnalysis.detectedStyle,
+        confidenceLevel: assessStudentConfidence(question, studentHistory, studentAnalysis),
+        topicComplexity: userPreferences.topicComplexity || 'medium'
+      })
+    }
     
     // Prepare context for the tutor with enhanced patience indicators
     const historyContext = studentHistory ? 
@@ -161,15 +106,38 @@ export async function POST(request: NextRequest) {
     }
     
     // Add patience reminders based on student needs
-    if (studentAnalysis.needsExtraPatience) {
+    if (studentAnalysis.patienceLevel !== 'standard') {
       tutorPrompt += '\n\nIMPORTANT: This student may need extra patience and encouragement. Break down complex concepts into smaller steps.'
     }
 
-    // Dynamic temperature control based on intent
-    const temperature = getDynamicTemperature(question)
+    // 🌡️ Enhanced Dynamic Temperature Control
+    const temperature = getDynamicTemperature(question, studentAnalysis)
     
-    // Enhanced system prompt for patient teaching
-    const enhancedSystemPrompt = customSystemPrompt || `You are an expert AI tutor for FuturoPal with infinite patience and empathy. Your teaching philosophy:
+    // 🏷️ Enhanced Topic Analysis
+    const topicTags = extractTopicTags(question, studyContext)
+    
+    // 📊 Enhanced Confidence Assessment
+    const confidenceLevel = assessStudentConfidence(question, studentHistory, studentAnalysis)
+    const patienceAnalysis = calculatePatienceNeeded(confidenceLevel, studentAnalysis, userPreferences.topicComplexity)
+    
+    // 🎨 Build Enhanced System Prompt with Teaching Style
+    let baseSystemPrompt = customSystemPrompt || `You are an expert AI tutor for FuturoPal with infinite patience and empathy. Your teaching philosophy:`
+    
+    // Apply teaching style personalization
+    let enhancedSystemPrompt = baseSystemPrompt
+    if (enableEmotionalIntelligence && teachingStyleSelection) {
+      const promptEnhancement = enhancePromptWithTeachingStyle(
+        baseSystemPrompt,
+        teachingStyleSelection.recommendedStyle,
+        {
+          emotionalState: emotionalAnalysis?.primaryEmotion,
+          learningStyle: learningStyleAnalysis?.detectedStyle,
+          topicComplexity: userPreferences.topicComplexity
+        }
+      )
+      enhancedSystemPrompt = promptEnhancement.enhancedPrompt
+    } else {
+      enhancedSystemPrompt = baseSystemPrompt + `
 
 🎯 CORE PRINCIPLES:
 - NEVER rush or overwhelm students
@@ -194,29 +162,103 @@ export async function POST(request: NextRequest) {
 - Encourage questions and curiosity
 
 Respond as a patient, understanding teacher who genuinely cares about student success.`
+    }
     
-    console.debug('🎓 Tutor Prompt Analysis:', {
+    // 💡 Generate Emotional Response Adaptations
+    let emotionalResponseGuidance = ''
+    if (enableEmotionalIntelligence && emotionalAnalysis) {
+      const emotionalResponse = generateEmotionalResponse(
+        emotionalAnalysis.primaryEmotion,
+        emotionalAnalysis.intensity,
+        {
+          topic: studyContext,
+          difficulty: userPreferences.difficulty,
+          attempts: studentHistory?.totalQuestionsAnswered
+        }
+      )
+      
+      emotionalResponseGuidance = `\n\nEMOTIONAL GUIDANCE: ${emotionalResponse.encouragement}\nADAPTATIONS: ${emotionalResponse.adaptations.join(', ')}`
+      enhancedSystemPrompt += emotionalResponseGuidance
+    }
+    
+    console.debug('🎓 Enhanced Tutor Analysis:', {
       questionIntent: studentAnalysis.intent,
       temperature,
       promptLength: tutorPrompt.length,
-      needsPatience: studentAnalysis.needsExtraPatience
+      needsPatience: studentAnalysis.patienceLevel,
+      emotionalState: emotionalAnalysis?.primaryEmotion,
+      learningStyle: learningStyleAnalysis?.detectedStyle,
+      teachingStyle: teachingStyleSelection?.recommendedStyle,
+      confidenceLevel,
+      topicTags: topicTags.tags
     })
 
-    const result = await openRouterClient.generateResponse({
-      prompt: tutorPrompt,
-      systemPrompt: enhancedSystemPrompt,
-      options: {
-        temperature,
-        top_p: 0.9,
-        max_tokens: 1000
-      }
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: enhancedSystemPrompt },
+        { role: 'user', content: tutorPrompt }
+      ],
+      temperature: temperature,
+      max_tokens: 1000
     })
+    
+    const response = completion.choices[0]?.message?.content
 
-    if (!result.success) {
-      throw new Error(`AI API error: ${result.error}`)
+    if (!response) {
+      throw new Error('AI API error: No response received')
     }
 
-    const data = result.data
+    let data = { response }
+    
+    // 🎮 Gamification Integration
+    let gamificationResults: any = null
+    if (enableGamification && response) {
+      // Calculate XP for this interaction
+      const xpResult = calculateTutorXP('ask_question', {
+        intent: studentAnalysis.intent,
+        difficulty: userPreferences.difficulty,
+        confidenceLevel,
+        emotionalState: emotionalAnalysis?.primaryEmotion,
+        patienceLevel: studentAnalysis.patienceLevel,
+        studentStreak: studentHistory?.streakDays
+      })
+      
+      // Check for new achievements
+      const achievementResult = checkTutorAchievements(
+        studentHistory,
+        {
+          questionsAsked: (studentHistory?.totalQuestionsAnswered || 0) + 1,
+          correctAnswers: studentHistory?.totalCorrectAnswers || 0,
+          topicsExplored: [studyContext, ...(studentHistory?.topicHistory || [])],
+          sessionDuration: userPreferences.sessionDuration || 15,
+          emotionalStates: [emotionalAnalysis?.primaryEmotion].filter(Boolean),
+          difficultyProgression: [userPreferences.difficulty].filter(Boolean),
+          conversationTurns: conversationHistory.length + 1
+        }
+      )
+      
+      // Generate motivational response
+      const motivationalMessage = generateMotivationalResponse({
+        userId: userId,
+        xpGained: xpResult.xpGained,
+        bonusReasons: xpResult.bonusReasons,
+        newAchievements: achievementResult.newAchievements,
+        emotionalState: emotionalAnalysis?.primaryEmotion,
+        learningVelocity: studentAnalysis.learningVelocity
+      })
+      
+      gamificationResults = {
+        xpGained: xpResult.xpGained,
+        bonusReasons: xpResult.bonusReasons,
+        newAchievements: achievementResult.newAchievements,
+        motivationalMessage
+      }
+      
+      // Integrate gamification with response
+      const enhancedResponseResult = integrateProgressWithResponse(response, gamificationResults)
+      data.response = enhancedResponseResult.enhancedResponse
+    }
 
     // Add helpful actions based on the question type with flashcard support
     let suggestedActions = []
@@ -271,14 +313,6 @@ Respond as a patient, understanding teacher who genuinely cares about student su
       })
     }
     
-    // Add visual learning support
-    if (questionLower.includes('visual') || questionLower.includes('diagram') || questionLower.includes('picture') || questionLower.includes('image')) {
-      suggestedActions.push({
-        label: '🎨 Visual Learning Aid',
-        action: 'create_visual',
-        icon: '🎨'
-      })
-    }
     
     // Add step-by-step breakdown for complex topics
     if (questionLower.includes('step') || questionLower.includes('process') || questionLower.includes('how to')) {
@@ -310,16 +344,18 @@ Respond as a patient, understanding teacher who genuinely cares about student su
       )
     }
 
-    // Topic tagging for better analytics
-    const topicTags = extractTopicTags(question, studyContext)
+    // Use the previously extracted topic tags for analytics
     
-    // Generate adaptive follow-up encouragement based on student needs
-    const encouragementOptions = getAdaptiveEncouragement(studentAnalysis, topicTags)
+    // 💖 Generate Adaptive Encouragement
+    const encouragementOptions = getAdaptiveEncouragement(
+      studentAnalysis, 
+      topicTags, 
+      {
+        consecutiveCorrect: studentHistory?.streakDays || 0,
+        recentMistakes: Math.max(0, (studentHistory?.totalQuestionsAnswered || 0) - (studentHistory?.totalCorrectAnswers || 0))
+      }
+    )
     const followUpEncouragement = encouragementOptions[Math.floor(Math.random() * encouragementOptions.length)]
-
-    // Enhanced confidence assessment with patience indicators
-    const confidenceLevel = assessStudentConfidence(question, studentHistory, studentAnalysis)
-    const patienceLevel = calculatePatienceNeeded(confidenceLevel, studentAnalysis)
 
     return NextResponse.json({
       success: true,
@@ -327,20 +363,64 @@ Respond as a patient, understanding teacher who genuinely cares about student su
       suggestedActions: suggestedActions,
       followUpEncouragement: followUpEncouragement,
       confidenceLevel: confidenceLevel,
+      // 🔄 Enhanced Learning Style Content Adaptation
+      contentAdaptations: enableEmotionalIntelligence && learningStyleAnalysis ? 
+        adaptContentForLearningStyle(response, learningStyleAnalysis.detectedStyle, studyContext || 'General') : undefined,
+      
+      // 🎮 Gamification Data
+      gamification: gamificationResults ? {
+        xpGained: gamificationResults.xpGained,
+        newAchievements: gamificationResults.newAchievements.map((a: any) => ({
+          id: a.id,
+          name: a.name,
+          emoji: a.emoji
+        })),
+        gamificationSummary: {
+          xpGained: gamificationResults.xpGained,
+          achievementsCount: gamificationResults.newAchievements.length,
+          motivationalHighlight: gamificationResults.motivationalMessage.primaryMessage
+        }
+      } : undefined,
+      
+      // 📊 Enhanced Metadata
       metadata: {
-        model: 'Google Gemini 2.5 Flash',
+        model: 'GPT-3.5 Turbo',
         provider: 'OpenRouter',
         respondedAt: new Date().toISOString(),
+        enhancedFeatures: {
+          emotionalIntelligence: enableEmotionalIntelligence,
+          gamification: enableGamification,
+          adaptiveTeaching: !!teachingStyleSelection
+        },
         questionAnalysis: {
           intent: studentAnalysis.intent,
-          topicTags: topicTags,
+          topicTags: topicTags.tags,
+          primaryTopic: topicTags.primaryTopic,
+          difficulty: topicTags.difficulty,
           suggestionsCount: suggestedActions.length,
           confidenceLevel: confidenceLevel,
-          patienceLevel: patienceLevel,
+          patienceLevel: patienceAnalysis.level,
           promptTemperature: temperature,
           finalPromptLength: tutorPrompt.length,
-          needsExtraPatience: studentAnalysis.needsExtraPatience
-        }
+          learningVelocity: studentAnalysis.learningVelocity
+        },
+        emotionalAnalysis: enableEmotionalIntelligence ? {
+          primaryEmotion: emotionalAnalysis?.primaryEmotion,
+          confidence: emotionalAnalysis?.confidence,
+          intensity: emotionalAnalysis?.intensity,
+          recommendedResponse: emotionalAnalysis?.recommendedResponse
+        } : undefined,
+        learningStyleAnalysis: enableEmotionalIntelligence ? {
+          detectedStyle: learningStyleAnalysis?.detectedStyle,
+          confidence: learningStyleAnalysis?.confidence,
+          indicators: learningStyleAnalysis?.indicators?.slice(0, 3)
+        } : undefined,
+        teachingStyleAnalysis: enableEmotionalIntelligence ? {
+          recommendedStyle: teachingStyleSelection?.recommendedStyle,
+          confidence: teachingStyleSelection?.confidence,
+          reasoning: teachingStyleSelection?.reasoning?.slice(0, 2)
+        } : undefined,
+        responseId: `resp_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
       }
     })
 
