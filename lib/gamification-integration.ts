@@ -277,12 +277,10 @@ export function checkTutorAchievements(
 // 🎯 Motivational Message Generation
 export function generateMotivationalResponse(
   context: {
+    userId: string
     xpGained: number
     bonusReasons: string[]
     newAchievements: any[]
-    currentLevel: number
-    currentXP: number
-    currentStreak: number
     emotionalState?: string
     learningVelocity?: number
   }
@@ -293,6 +291,11 @@ export function generateMotivationalResponse(
   nextGoalMotivation: string
   personalizedEncouragement: string
 } {
+  // Load current progress from gamification engine (single source of truth)
+  const currentProgress = gamificationEngine.loadProgress(context.userId)
+  
+  // Progress validation logging
+  console.log(`[Progress Validation] User: ${context.userId}, XP: ${currentProgress.xpPoints}, Level: ${currentProgress.level}, Streak: ${currentProgress.streak}`)
   // Primary motivational message based on XP gained
   let primaryMessage = ''
   if (context.xpGained >= 50) {
@@ -318,16 +321,22 @@ export function generateMotivationalResponse(
     achievementCelebration = `🏆 **Achievement${context.newAchievements.length > 1 ? 's' : ''} Unlocked!** ${achievements}`
   }
   
-  // Next goal motivation
-  const xpToNextLevel = ((context.currentLevel + 1) * 100) - (context.currentXP % 100)
+  // Next goal motivation using gamification engine methods
+  const nextLevel = currentProgress.level + 1
+  const xpForNextLevel = gamificationEngine.getXPForNextLevel(currentProgress.level)
+  const xpToNextLevel = xpForNextLevel - currentProgress.xpPoints
+  
+  // Progress validation: ensure calculations are consistent
+  console.log(`[XP Calculation] Next Level: ${nextLevel}, XP for Next Level: ${xpForNextLevel}, XP to Next Level: ${xpToNextLevel}`)
+  
   let nextGoalMotivation = ''
   
   if (xpToNextLevel <= 20) {
-    nextGoalMotivation = `🔥 You're so close to Level ${context.currentLevel + 1}! Just ${xpToNextLevel} XP to go!`
+    nextGoalMotivation = `🔥 You're so close to Level ${nextLevel}! Just ${xpToNextLevel} XP to go!`
   } else if (xpToNextLevel <= 50) {
-    nextGoalMotivation = `⭐ Keep going! Level ${context.currentLevel + 1} is within reach - ${xpToNextLevel} XP away!`
+    nextGoalMotivation = `⭐ Keep going! Level ${nextLevel} is within reach - ${xpToNextLevel} XP away!`
   } else {
-    nextGoalMotivation = `🎯 Working towards Level ${context.currentLevel + 1}! ${xpToNextLevel} XP to reach the next milestone!`
+    nextGoalMotivation = `🎯 Working towards Level ${nextLevel}! ${xpToNextLevel} XP to reach the next milestone!`
   }
   
   // Personalized encouragement based on emotional state and learning velocity
@@ -367,11 +376,11 @@ export function generateMotivationalResponse(
     }
   }
   
-  // Add streak encouragement if applicable
-  if (context.currentStreak >= 5) {
-    personalizedEncouragement += ` And that ${context.currentStreak}-question streak? Pure fire! 🔥🔥🔥`
-  } else if (context.currentStreak >= 3) {
-    personalizedEncouragement += ` Plus you've got a ${context.currentStreak}-question streak going! 🔥`
+  // Add streak encouragement if applicable using current progress
+  if (currentProgress.streak >= 5) {
+    personalizedEncouragement += ` And that ${currentProgress.streak}-question streak? Pure fire! 🔥🔥🔥`
+  } else if (currentProgress.streak >= 3) {
+    personalizedEncouragement += ` Plus you've got a ${currentProgress.streak}-question streak going! 🔥`
   }
   
   return {
@@ -400,14 +409,15 @@ export function buildGamificationContext(
   // Determine next milestone
   let nextMilestone: GamificationContext['nextMilestone']
   
-  const xpToNextLevel = ((progress.level + 1) * 100) - (progress.xpPoints % 100)
+  const xpForNextLevel = gamificationEngine.getXPForNextLevel(progress.level)
+  const xpToNextLevel = xpForNextLevel - progress.xpPoints
   const questionsToNextAchievement = getQuestionsToNextAchievement(progress.totalQuestionsAnswered)
   
   if (xpToNextLevel <= questionsToNextAchievement.xpEquivalent) {
     nextMilestone = {
       type: 'level',
       target: progress.level + 1,
-      progress: (progress.xpPoints % 100) / 100 * 100
+      progress: (progress.xpPoints / xpForNextLevel) * 100
     }
   } else {
     nextMilestone = {

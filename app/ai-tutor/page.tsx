@@ -91,6 +91,69 @@ const AITutorPage = () => {
   // Mobile sidebar state
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
+  // 🎯 NEW: Student session tracking for answer validation and context
+  const [studentSession, setStudentSession] = useState({
+    currentQuestionId: null as string | null,
+    currentQuestionAnswered: true, // Start as true so first question can be generated
+    previousAnswers: [] as Array<{
+      questionId: string
+      isCorrect: boolean
+      topic: string
+      difficulty: 'easy' | 'medium' | 'hard'
+      timestamp: string
+      responseTime: number
+      attempts: number
+    }>,
+    questionStartTime: null as number | null
+  })
+
+  // Progress tracking and validation state
+  const [showSkipWarning, setShowSkipWarning] = useState(false)
+  
+  // Context editing state
+  const [editingContext, setEditingContext] = useState(false)
+  const [newLearningGoal, setNewLearningGoal] = useState('')
+
+  // Function to update learning goal
+  const updateLearningGoal = (newGoal: string) => {
+    if (newGoal.trim()) {
+      setOriginalStudentPrompt(newGoal.trim())
+      
+      // Extract and update study context
+      const extractTopicFromPrompt = (prompt: string) => {
+        const patterns = [
+          /(?:learn|study|understand|explain|teach me|help me with|about|tell me about)\s+(.+?)(?:\.|$|\?|,)/i,
+          /(?:what is|what are|how to|how does|why)\s+(.+?)(?:\?|$|\.|,)/i,
+          /(?:i want to|i need to)\s+(?:learn|study|understand)\s+(.+?)(?:\.|$|\?|,)/i
+        ]
+        
+        for (const pattern of patterns) {
+          const match = prompt.match(pattern)
+          if (match && match[1]) {
+            return match[1].trim()
+          }
+        }
+        return null
+      }
+      
+      const extractedTopic = extractTopicFromPrompt(newGoal)
+      if (extractedTopic) {
+        setStudySession(prev => ({ ...prev, studyContext: extractedTopic }))
+      }
+      
+      // Add confirmation message
+      const confirmationMessage = {
+        role: 'assistant' as const,
+        content: `🎯 **Learning Goal Updated!**\n\nI've updated your learning focus to: "${newGoal}"\n\n${extractedTopic ? `I'll now generate questions specifically about **${extractedTopic}** to help you achieve this goal!` : 'I\'ll tailor all questions to help you achieve this learning objective!'}`,
+        type: 'chat' as const
+      }
+      setConversation(prev => [...prev, confirmationMessage])
+    }
+    
+    setEditingContext(false)
+    setNewLearningGoal('')
+  }
+
   // Helper function to get current learning context with smart reconstruction
   const getCurrentLearningContext = (): string => {
     // Priority 1: Original captured learning prompt
@@ -402,15 +465,36 @@ const AITutorPage = () => {
       return
     }
 
+    // 🛑 BLOCKING LOGIC: Check if student needs to answer current question first
+    if (studentSession.currentQuestionId && !studentSession.currentQuestionAnswered) {
+      setShowSkipWarning(true)
+      const warningMessage = {
+        role: 'assistant' as const,
+        content: "🛑 **Please answer the current question before requesting a new one!**\n\nI notice you haven't answered the current question yet. Let's complete that first to build on your learning progress!\n\n💡 *Answering questions helps me understand your strengths and areas for improvement, so I can provide better personalized questions for you.*",
+        type: 'chat' as const
+      }
+      setConversation(prev => [...prev, warningMessage])
+      
+      // Auto-hide warning after 3 seconds
+      setTimeout(() => setShowSkipWarning(false), 3000)
+      return
+    }
+
     setIsGenerating(true)
     setCurrentDifficulty(difficulty)
 
     try {
+      // Create comprehensive content context that includes user's original learning goal
+      const contentContext = originalStudentPrompt 
+        ? `Student's original learning goal: "${originalStudentPrompt}". Current study context: ${studySession.studyContext}. The student specifically wants to learn: ${originalStudentPrompt}`
+        : `Learning about ${studySession.studyContext}. Generate engaging questions that help students understand key concepts.`
+
       const result = await aiAgent.generateQuestion(
         studySession.studyContext, 
         difficulty, 
-        `Learning about ${studySession.studyContext}. Generate engaging questions that help students understand key concepts.`, 
-        studySession.questionsAsked
+        contentContext,
+        studySession.questionsAsked,
+        studentSession // Pass student session for context-aware generation
       )
       
       if (result.success && result.question) {
@@ -430,6 +514,15 @@ const AITutorPage = () => {
           currentQuestion: question,
           questionsAsked: [...prev.questionsAsked, question]
         }))
+        
+        // 🎯 Update student session to track new question
+        setStudentSession(prev => ({
+          ...prev,
+          currentQuestionId: question.id,
+          currentQuestionAnswered: false,
+          questionStartTime: Date.now()
+        }))
+        
         setShowAnswer(false)
         setUserAnswer('')
         
@@ -467,7 +560,9 @@ const AITutorPage = () => {
         { 
           difficulty: currentDifficulty,
           originalLearningGoal: originalStudentPrompt // Add context from our continuity system
-        }
+        },
+        studentSession, // Pass current session state
+        studentSession.questionStartTime || undefined // Pass start time for response time calculation
       )
       
       if (result.success && result.feedback) {
@@ -513,6 +608,16 @@ ${result.nextSteps ? `\n🎯 **Next Steps:** ${result.nextSteps}` : ''}`
         
         setConversation(prev => [...prev, feedbackMessage])
         setShowAnswer(true)
+
+        // 🎯 Update student session with answer result
+        if (result.updatedSessionState) {
+          setStudentSession(result.updatedSessionState)
+        }
+
+        // Store session insights if provided
+        if (result.sessionInsights) {
+          setSessionInsights(result.sessionInsights)
+        }
 
         // Award XP based on AI rating and performance
         let xpGain = 5 // Base participation points
@@ -658,16 +763,49 @@ Technical details: ${errorMsg}`,
     // Show typing indicator
     setShowTypingIndicator(true)
     
+    // Enhanced topic extraction and learning context capture
+    const extractLearningContext = (message: string) => {
+      const lowercaseMessage = message.toLowerCase()
+      const learningKeywords = [
+        'learn', 'understand', 'explain', 'teach', 'help', 'study', 'practice',
+        'what is', 'how to', 'how does', 'why', 'can you explain', 'tell me about',
+        'i want to', 'i need to', 'help me', 'show me', 'guide me'
+      ]
+      
+      const hasLearningIntent = learningKeywords.some(keyword => 
+        lowercaseMessage.includes(keyword)
+      ) || message.includes('?')
+      
+      return hasLearningIntent && message.length > 15
+    }
+
     // Capture original student prompt if this is the first substantive learning question
-    if (!originalStudentPrompt && userMessage.length > 15 && 
-        (userMessage.toLowerCase().includes('learn') || 
-         userMessage.toLowerCase().includes('understand') ||
-         userMessage.toLowerCase().includes('explain') ||
-         userMessage.toLowerCase().includes('teach') ||
-         userMessage.toLowerCase().includes('help') ||
-         userMessage.includes('?'))) {
+    if (!originalStudentPrompt && extractLearningContext(userMessage)) {
       setOriginalStudentPrompt(userMessage)
       console.log('📝 Captured original student prompt:', userMessage)
+      
+      // Auto-extract and set study context from the prompt
+      const extractTopicFromPrompt = (prompt: string) => {
+        const patterns = [
+          /(?:learn|study|understand|explain|teach me|help me with|about|tell me about)\s+(.+?)(?:\.|$|\?|,)/i,
+          /(?:what is|what are|how to|how does|why)\s+(.+?)(?:\?|$|\.|,)/i,
+          /(?:i want to|i need to)\s+(?:learn|study|understand)\s+(.+?)(?:\.|$|\?|,)/i
+        ]
+        
+        for (const pattern of patterns) {
+          const match = prompt.match(pattern)
+          if (match && match[1]) {
+            return match[1].trim()
+          }
+        }
+        return null
+      }
+      
+      const extractedTopic = extractTopicFromPrompt(userMessage)
+      if (extractedTopic && !studySession.studyContext) {
+        setStudySession(prev => ({ ...prev, studyContext: extractedTopic }))
+        console.log('🎯 Auto-extracted study context:', extractedTopic)
+      }
     }
 
     // Track session progress
@@ -1611,10 +1749,70 @@ Technical details: ${errorMsg}`,
             <Target size={16} className="text-blue-500" />
             <span>Questions: <span className="font-semibold text-blue-600">{studySession.questionsAsked.length}</span></span>
           </div>
-          {originalStudentPrompt && (
-            <div className="flex items-center space-x-1" title={`Learning Context: ${originalStudentPrompt}`}>
+          {originalStudentPrompt && !editingContext && (
+            <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1 rounded-full border border-purple-200" title={`Learning Goal: ${originalStudentPrompt}`}>
               <BookOpen size={16} className="text-purple-500" />
-              <span className="text-purple-600 font-medium">Context Locked</span>
+              <span className="text-purple-700 font-medium text-sm">
+                🎯 Goal: {originalStudentPrompt.length > 30 
+                  ? `${originalStudentPrompt.substring(0, 30)}...` 
+                  : originalStudentPrompt}
+              </span>
+              <button
+                onClick={() => {
+                  setEditingContext(true)
+                  setNewLearningGoal(originalStudentPrompt)
+                }}
+                className="text-purple-500 hover:text-purple-700 text-xs ml-1"
+                title="Edit learning goal"
+              >
+                ✏️
+              </button>
+            </div>
+          )}
+          {editingContext && (
+            <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+              <BookOpen size={16} className="text-purple-500" />
+              <input
+                type="text"
+                value={newLearningGoal}
+                onChange={(e) => setNewLearningGoal(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    updateLearningGoal(newLearningGoal)
+                  } else if (e.key === 'Escape') {
+                    setEditingContext(false)
+                    setNewLearningGoal('')
+                  }
+                }}
+                placeholder="What do you want to learn?"
+                className="text-sm bg-transparent border-none outline-none text-purple-700 placeholder-purple-400 min-w-0 flex-1"
+                autoFocus
+              />
+              <button
+                onClick={() => updateLearningGoal(newLearningGoal)}
+                className="text-green-500 hover:text-green-700 text-xs"
+                title="Save changes"
+              >
+                ✅
+              </button>
+              <button
+                onClick={() => {
+                  setEditingContext(false)
+                  setNewLearningGoal('')
+                }}
+                className="text-red-500 hover:text-red-700 text-xs"
+                title="Cancel editing"
+              >
+                ❌
+              </button>
+            </div>
+          )}
+          {studySession.studyContext && studySession.studyContext !== originalStudentPrompt && (
+            <div className="flex items-center space-x-1 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+              <Target size={16} className="text-blue-500" />
+              <span className="text-blue-700 font-medium text-sm">
+                📚 Studying: {studySession.studyContext}
+              </span>
             </div>
           )}
           {toolPromptMode && selectedTool && (
@@ -1630,6 +1828,64 @@ Technical details: ${errorMsg}`,
         </div>
       </div>
 
+      {/* Session Insights Panel */}
+      {sessionInsights && studentSession.previousAnswers.length > 0 && (
+        <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+              <Activity className="h-5 w-5 text-blue-500 mr-2" />
+              📊 Learning Progress
+            </h3>
+            {showSkipWarning && (
+              <div className="bg-orange-100 border border-orange-300 rounded-lg px-3 py-1 animate-pulse">
+                <span className="text-orange-700 text-sm font-medium">⚠️ Answer current question first!</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div className="bg-white rounded-lg p-3 border">
+              <div className="text-2xl font-bold text-green-600">{sessionInsights.overallAccuracy}%</div>
+              <div className="text-sm text-gray-600">Overall Accuracy</div>
+            </div>
+            <div className="bg-white rounded-lg p-3 border">
+              <div className="text-2xl font-bold text-blue-600">{sessionInsights.totalQuestionsAnswered}</div>
+              <div className="text-sm text-gray-600">Questions Answered</div>
+            </div>
+            <div className="bg-white rounded-lg p-3 border">
+              <div className="text-2xl font-bold text-purple-600">{sessionInsights.strongTopics.length}</div>
+              <div className="text-sm text-gray-600">Strong Topics</div>
+            </div>
+            <div className="bg-white rounded-lg p-3 border">
+              <div className="text-2xl font-bold text-orange-600">{sessionInsights.weakTopics.length}</div>
+              <div className="text-sm text-gray-600">Focus Areas</div>
+            </div>
+          </div>
+
+          {sessionInsights.recommendations && sessionInsights.recommendations.length > 0 && (
+            <div className="bg-white rounded-lg p-3 border">
+              <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                <Lightbulb className="h-4 w-4 text-yellow-500 mr-1" />
+                Smart Recommendations
+              </h4>
+              <div className="space-y-1">
+                {sessionInsights.recommendations.map((rec: string, idx: number) => (
+                  <div key={idx} className="text-sm text-gray-700 flex items-start">
+                    <span className="text-blue-500 mr-2">•</span>
+                    <span>{rec}</span>
+                  </div>
+                ))}
+              </div>
+              {sessionInsights.readyForNextLevel && (
+                <div className="mt-2 bg-green-100 border border-green-300 rounded-lg p-2">
+                  <span className="text-green-700 text-sm font-medium">🎉 Ready for more challenging questions!</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -1641,11 +1897,11 @@ Technical details: ${errorMsg}`,
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Optimized Controls Sidebar */}
         <div className={`lg:col-span-1 space-y-3 ${
-          // Mobile: Fixed overlay sidebar
+          // Mobile: Fixed overlay sidebar - Remove overflow-y-auto to prevent double scroll
           'lg:relative lg:translate-x-0 lg:bg-transparent ' + 
           (isMobileSidebarOpen 
-            ? 'fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-xl transform translate-x-0 overflow-y-auto' 
-            : 'fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-xl transform -translate-x-full overflow-y-auto'
+            ? 'fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-xl transform translate-x-0' 
+            : 'fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-xl transform -translate-x-full'
           ) + ' transition-transform duration-300 ease-in-out lg:transition-none'
         }`}>
           {/* Quick Action Bar - Always Visible */}
@@ -1991,10 +2247,7 @@ Technical details: ${errorMsg}`,
             <div className="flex-1 overflow-y-auto p-4">
               {conversation.map((message, index) => renderMessage(message, index))}
               
-              {/* Typing Indicator */}
-              {showTypingIndicator && (
-                <TypingIndicator message="I'm thinking of the perfect response..." />
-              )}
+           
               
               {/* Current Question Answer Input */}
               {studySession.currentQuestion && studySession.currentQuestion.type === 'open-ended' && !showAnswer && (

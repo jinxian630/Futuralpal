@@ -3,7 +3,14 @@ import { openai } from '@/lib/openai-config'
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, difficulty, content, previousQuestions = [] } = await request.json()
+    const { 
+      topic, 
+      difficulty, 
+      content, 
+      previousQuestions = [], 
+      studentSession,
+      forceGenerate = false 
+    } = await request.json()
 
     if (!topic || !difficulty || !content) {
       return NextResponse.json({
@@ -12,8 +19,72 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // 🛑 STEP 1: Check if student needs to answer current question first
+    if (!forceGenerate && studentSession) {
+      if (studentSession.currentQuestionId && !studentSession.currentQuestionAnswered) {
+        return NextResponse.json({
+          success: false,
+          blocked: true,
+          error: '🛑 Please answer the current question before requesting a new one!',
+          message: "I notice you haven't answered the current question yet. Let's complete that first to build on your learning progress!",
+          currentQuestionId: studentSession.currentQuestionId,
+          metadata: {
+            blockReason: 'unanswered_question',
+            blockedAt: new Date().toISOString()
+          }
+        }, { status: 409 }) // 409 Conflict - indicates the request conflicts with current state
+      }
+    }
+
     // Get previous topics to avoid repetition
     const previousTopics = previousQuestions.map((q: any) => q.topic).join(', ')
+
+    // 🎯 STEP 2: Context-Aware Question Generation
+    let contextualPromptAddition = ''
+    let adaptedDifficulty = difficulty
+
+    if (studentSession?.previousAnswers && studentSession.previousAnswers.length > 0) {
+      // Calculate performance statistics
+      const topicStats = calculateTopicPerformance(studentSession.previousAnswers)
+      const overallAccuracy = studentSession.previousAnswers.filter((a: any) => a.isCorrect).length / studentSession.previousAnswers.length
+      
+      // Find weakest topics for focused learning
+      const weakestTopics = Object.entries(topicStats)
+        .filter(([_, stats]) => stats.accuracy < 0.6)
+        .sort((a, b) => (a[1] as any).accuracy - (b[1] as any).accuracy)
+        .slice(0, 3)
+        .map(([topic, _]) => topic)
+
+      // Find strongest topics
+      const strongestTopics = Object.entries(topicStats)
+        .filter(([_, stats]) => stats.accuracy > 0.8 && stats.questionCount >= 2)
+        .map(([topic, _]) => topic)
+
+      // Adaptive difficulty based on recent performance
+      if (overallAccuracy > 0.8 && difficulty === 'easy') {
+        adaptedDifficulty = 'medium'
+      } else if (overallAccuracy < 0.4 && difficulty === 'hard') {
+        adaptedDifficulty = 'medium'
+      }
+
+      // Create contextual guidance for question generation
+      contextualPromptAddition = `
+
+**CONTEXTUAL LEARNING ADAPTATION:**
+- Student Overall Accuracy: ${(overallAccuracy * 100).toFixed(1)}%
+- Total Questions Answered: ${studentSession.previousAnswers.length}
+${weakestTopics.length > 0 ? `- Areas Needing Focus: ${weakestTopics.join(', ')}` : ''}
+${strongestTopics.length > 0 ? `- Strong Areas: ${strongestTopics.join(', ')}` : ''}
+${adaptedDifficulty !== difficulty ? `- Difficulty Adapted: ${difficulty} → ${adaptedDifficulty} (based on performance)` : ''}
+
+**GENERATION PRIORITY:**
+${weakestTopics.includes(topic) ? 
+  '- HIGH PRIORITY: This topic needs reinforcement. Create a supportive question that builds confidence.' :
+  '- STANDARD: Create an engaging question that maintains learning momentum.'
+}
+
+Please tailor the question complexity and explanation style based on these insights.`
+    }
 
     // Enhanced prompt for generating a single question
     const systemPrompt = `You are an expert educational assessment creator who generates high-quality individual questions to help students learn and test their knowledge.
@@ -42,19 +113,49 @@ You must respond with a JSON object containing:
 - explanation: detailed explanation of the answer
 - idealAnswer: comprehensive answer (only for open-ended)`
 
-    const userPrompt = `Generate a single ${difficulty} question about "${topic}" based on this content: "${content}"
+    // Extract user's original learning prompt and topic from the content
+    const extractUserLearningGoal = (content: string) => {
+      // Look for patterns that indicate what the user wants to learn
+      const patterns = [
+        /Student's original learning goal: "([^"]+)"/i,
+        /User wants to learn about: ([^\n\.]+)/i,
+        /Learning about: ([^\n\.]+)/i,
+        /I want to (?:learn|understand|study) ([^\n\.]+)/i,
+        /Help me (?:with|understand|learn) ([^\n\.]+)/i,
+        /(?:Explain|Teach me|Tell me about) ([^\n\.]+)/i
+      ]
+      
+      for (const pattern of patterns) {
+        const match = content.match(pattern)
+        if (match && match[1]) {
+          return match[1].trim()
+        }
+      }
+      return null
+    }
 
-**Content Context:** ${content}
-**Difficulty Level:** ${difficulty}
-**Topic Focus:** ${topic}
-${previousTopics ? `**Avoid these previously covered topics:** ${previousTopics}` : ''}
+    const userLearningGoal = extractUserLearningGoal(content)
+    const effectiveTopic = userLearningGoal || topic
+    
+    const userPrompt = `Generate a single ${adaptedDifficulty} MCQ question that directly helps the user learn what they specifically requested.
 
-**Requirements:**
-- Create either a multiple choice question (with 4 options A-D) or an open-ended question
-- Question should test understanding of the core concepts from the content
-- Include a detailed explanation that reinforces learning
-- Make the question engaging and educational
-- Ensure it matches the ${difficulty} difficulty level
+**STUDENT'S LEARNING REQUEST:** ${userLearningGoal ? `"${userLearningGoal}"` : `Learning about ${topic}`}
+**CONTENT CONTEXT:** ${content}
+**DIFFICULTY LEVEL:** ${adaptedDifficulty}${adaptedDifficulty !== difficulty ? ` (adapted from ${difficulty})` : ''}
+**TOPIC FOCUS:** ${effectiveTopic}
+${previousTopics ? `**AVOID THESE COVERED TOPICS:** ${previousTopics}` : ''}
+${contextualPromptAddition}
+
+**CRITICAL REQUIREMENTS:**
+- Question MUST be directly relevant to what the student wants to learn: "${userLearningGoal || topic}"
+- Create an engaging multiple choice question (4 options A-D) that tests understanding
+- Ensure the question helps achieve the student's specific learning goal
+- Make it appropriate for ${adaptedDifficulty} difficulty level
+
+**ADDITIONAL GUIDELINES:**
+- Include a detailed explanation that connects to the student's learning goal
+- Make the question engaging and directly relevant to their interests
+- Focus on practical understanding of the concepts they want to learn
 
 **CRITICAL: Return ONLY valid JSON. Example format:**
 
@@ -212,4 +313,54 @@ function getEncouragementMessage(difficulty: string): string {
   
   const difficultyMessages = messages[difficulty as keyof typeof messages] || messages.medium
   return difficultyMessages[Math.floor(Math.random() * difficultyMessages.length)]
+}
+
+// Helper function to calculate topic performance statistics
+function calculateTopicPerformance(previousAnswers: Array<{
+  questionId: string
+  isCorrect: boolean
+  topic: string
+  difficulty: 'easy' | 'medium' | 'hard'
+  timestamp: string
+  responseTime: number
+  attempts: number
+}>): Record<string, { accuracy: number; questionCount: number; averageTime: number }> {
+  const topicStats: Record<string, { 
+    correct: number; 
+    total: number; 
+    totalTime: number; 
+    accuracy: number; 
+    questionCount: number; 
+    averageTime: number 
+  }> = {}
+
+  // Calculate raw statistics
+  previousAnswers.forEach(answer => {
+    if (!topicStats[answer.topic]) {
+      topicStats[answer.topic] = {
+        correct: 0,
+        total: 0,
+        totalTime: 0,
+        accuracy: 0,
+        questionCount: 0,
+        averageTime: 0
+      }
+    }
+
+    const stats = topicStats[answer.topic]
+    stats.total++
+    stats.totalTime += answer.responseTime
+    if (answer.isCorrect) {
+      stats.correct++
+    }
+  })
+
+  // Calculate derived metrics
+  Object.values(topicStats).forEach(stats => {
+    stats.accuracy = stats.total > 0 ? stats.correct / stats.total : 0
+    stats.questionCount = stats.total
+    stats.averageTime = stats.total > 0 ? stats.totalTime / stats.total : 0
+  })
+
+  return topicStats as Record<string, { accuracy: number; questionCount: number; averageTime: number }>
 }

@@ -240,12 +240,10 @@ Respond as a patient, understanding teacher who genuinely cares about student su
       
       // Generate motivational response
       const motivationalMessage = generateMotivationalResponse({
+        userId: userId,
         xpGained: xpResult.xpGained,
         bonusReasons: xpResult.bonusReasons,
         newAchievements: achievementResult.newAchievements,
-        currentLevel: studentHistory?.level || 1,
-        currentXP: (studentHistory?.xpPoints || 0) + xpResult.xpGained,
-        currentStreak: studentHistory?.streakDays || 0,
         emotionalState: emotionalAnalysis?.primaryEmotion,
         learningVelocity: studentAnalysis.learningVelocity
       })

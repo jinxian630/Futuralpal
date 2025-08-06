@@ -157,6 +157,37 @@ export interface LearningProgress {
   achievementsUnlocked: string[]
 }
 
+// 🎯 Student Session with Answer Tracking
+export interface StudentSession {
+  currentQuestionId: string | null
+  currentQuestionAnswered: boolean
+  previousAnswers: Array<{
+    questionId: string
+    isCorrect: boolean
+    topic: string
+    difficulty: 'easy' | 'medium' | 'hard'
+    timestamp: string
+    responseTime: number // milliseconds
+    attempts: number
+  }>
+  topicPerformance: Map<string, {
+    totalQuestions: number
+    correctAnswers: number
+    averageResponseTime: number
+    difficultyProgression: Array<{
+      difficulty: 'easy' | 'medium' | 'hard'
+      success: boolean
+      timestamp: string
+    }>
+  }>
+  contextualInsights: {
+    strongTopics: string[]
+    weakTopics: string[]
+    recommendedFocus: string[]
+    learningPattern: 'visual' | 'analytical' | 'practical' | 'mixed'
+  }
+}
+
 // 🔄 Multi-Turn Conversation Context
 export interface ConversationContext {
   conversationId: string

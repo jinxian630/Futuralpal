@@ -23,49 +23,79 @@ export const QuickActionBar: React.FC<QuickActionBarProps> = ({
   className = "" 
 }) => {
   return (
-    <div className={`bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-100 ${className}`}>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-gray-800 flex items-center">
-          <Zap size={14} className="mr-1 text-blue-500" />
+    <div className={`bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl p-4 border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 ${className}`}>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+          <div className="p-1 bg-blue-500 rounded-md">
+            <Zap size={12} className="text-white" />
+          </div>
           Quick Actions
         </h3>
-        <div className="text-xs text-gray-500">Most used</div>
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+          Ready to go
+        </div>
       </div>
       
-      <div className="grid grid-cols-3 gap-2">
-        {actions.map((action) => (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {actions.map((action, index) => (
           <button
             key={action.id}
             onClick={action.onClick}
             disabled={action.disabled}
             title={action.tooltip}
             className={`
-              relative p-2 rounded-md text-xs font-medium transition-all duration-200
-              flex flex-col items-center space-y-1
+              group relative p-3 rounded-xl text-xs font-bold transition-all duration-300
+              flex flex-col items-center gap-2
               disabled:opacity-50 disabled:cursor-not-allowed
+              transform hover:scale-105 active:scale-95
               ${action.primary 
-                ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5' 
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 hover:border-gray-300'
+                ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1' 
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-blue-300 shadow-sm hover:shadow-md'
               }
-              focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50
+              focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-30
             `}
+            style={{ 
+              animationDelay: `${index * 100}ms`,
+              animation: 'slideInUp 0.5s ease-out forwards'
+            }}
           >
-            <div className={`flex-shrink-0 ${action.primary ? 'text-white' : 'text-gray-600'}`}>
+            <div className={`flex-shrink-0 transition-all duration-200 ${
+              action.primary 
+                ? 'text-white group-hover:scale-110' 
+                : 'text-gray-600 group-hover:text-blue-500 group-hover:scale-110'
+            }`}>
               {action.icon}
             </div>
-            <span className="text-center leading-tight">{action.label}</span>
+            <span className="text-center leading-tight text-xs font-semibold">
+              {action.label}
+            </span>
             
-            {/* Subtle shine effect for primary buttons */}
+            {/* Enhanced effects for primary buttons */}
             {action.primary && (
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-md" />
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl" />
+                <div className="absolute top-1 right-1">
+                  <div className="w-2 h-2 bg-yellow-300 rounded-full animate-ping opacity-75" />
+                </div>
+              </>
+            )}
+            
+            {/* Disabled state overlay */}
+            {action.disabled && (
+              <div className="absolute inset-0 bg-gray-100/50 rounded-xl flex items-center justify-center">
+                <div className="text-xs text-gray-400 font-medium">Coming soon</div>
+              </div>
             )}
           </button>
         ))}
       </div>
       
-      <div className="mt-2 text-center">
-        <div className="text-xs text-gray-500 italic">
-          💡 One-click access to your favorites
+      <div className="mt-4 text-center">
+        <div className="text-xs text-gray-400 flex items-center justify-center gap-1">
+          <span>✨</span>
+          <span className="italic">Tap to activate your learning superpowers</span>
+          <span>🚀</span>
         </div>
       </div>
     </div>

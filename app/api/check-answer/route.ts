@@ -3,7 +3,13 @@ import { openai } from '@/lib/openai-config'
 
 export async function POST(request: NextRequest) {
   try {
-    const { question, userAnswer, studentContext } = await request.json()
+    const { 
+      question, 
+      userAnswer, 
+      studentContext,
+      studentSession,
+      responseStartTime 
+    } = await request.json()
 
     if (!question || !userAnswer) {
       return NextResponse.json({
@@ -145,6 +151,27 @@ Return ONLY the JSON object, no additional text.`
       nextSteps = "Would you like to see more examples or get additional explanations on this topic?"
     }
 
+    // Calculate response time if provided
+    const responseTime = responseStartTime ? Date.now() - responseStartTime : 0
+
+    // Create updated session state
+    const updatedSessionState = studentSession ? {
+      ...studentSession,
+      currentQuestionAnswered: true,
+      previousAnswers: [
+        ...(studentSession.previousAnswers || []),
+        {
+          questionId: question.id || `q_${Date.now()}`,
+          isCorrect: feedbackData.isCorrect,
+          topic: question.topic || 'General',
+          difficulty: difficulty as 'easy' | 'medium' | 'hard',
+          timestamp: new Date().toISOString(),
+          responseTime: responseTime,
+          attempts: 1 // Could be enhanced to track multiple attempts
+        }
+      ]
+    } : null
+
     return NextResponse.json({
       success: true,
       feedback: {
@@ -157,13 +184,17 @@ Return ONLY the JSON object, no additional text.`
       },
       performanceMessage,
       nextSteps,
+      updatedSessionState,
+      sessionInsights: updatedSessionState ? generateSessionInsights(updatedSessionState) : null,
       metadata: {
         model: 'GPT-3.5 Turbo',
         provider: 'OpenAI',
         generatedAt: new Date().toISOString(),
         questionType: questionType,
         difficulty: difficulty,
-        hasLearningContext: !!originalLearningGoal
+        hasLearningContext: !!originalLearningGoal,
+        responseTime: responseTime,
+        sessionUpdated: !!updatedSessionState
       }
     })
 
@@ -216,5 +247,70 @@ Return ONLY the JSON object, no additional text.`
         errorAt: new Date().toISOString()
       }
     }, { status: 500 })
+  }
+}
+
+// Helper function to generate session insights
+function generateSessionInsights(sessionState: any) {
+  if (!sessionState.previousAnswers || sessionState.previousAnswers.length === 0) {
+    return null
+  }
+
+  const answers = sessionState.previousAnswers
+  const totalQuestions = answers.length
+  const correctAnswers = answers.filter((a: any) => a.isCorrect).length
+  const accuracy = totalQuestions > 0 ? correctAnswers / totalQuestions : 0
+
+  // Calculate topic-specific performance
+  const topicStats: Record<string, { correct: number; total: number; accuracy: number }> = {}
+  answers.forEach((answer: any) => {
+    if (!topicStats[answer.topic]) {
+      topicStats[answer.topic] = { correct: 0, total: 0, accuracy: 0 }
+    }
+    topicStats[answer.topic].total++
+    if (answer.isCorrect) {
+      topicStats[answer.topic].correct++
+    }
+  })
+
+  // Calculate accuracy for each topic
+  Object.keys(topicStats).forEach(topic => {
+    const stats = topicStats[topic]
+    stats.accuracy = stats.total > 0 ? stats.correct / stats.total : 0
+  })
+
+  // Identify strong and weak topics
+  const strongTopics = Object.entries(topicStats)
+    .filter(([_, stats]) => stats.accuracy >= 0.8 && stats.total >= 2)
+    .map(([topic, _]) => topic)
+
+  const weakTopics = Object.entries(topicStats)
+    .filter(([_, stats]) => stats.accuracy < 0.6)
+    .sort((a, b) => a[1].accuracy - b[1].accuracy)
+    .slice(0, 3)
+    .map(([topic, _]) => topic)
+
+  // Generate recommendations
+  let recommendations = []
+  if (accuracy > 0.8) {
+    recommendations.push("🌟 Excellent progress! Consider tackling more challenging questions.")
+  } else if (accuracy > 0.6) {
+    recommendations.push("💪 Good work! Focus on areas that need improvement.")
+  } else {
+    recommendations.push("🎯 Take your time and review concepts before answering.")
+  }
+
+  if (weakTopics.length > 0) {
+    recommendations.push(`📚 Focus on: ${weakTopics.join(', ')}`)
+  }
+
+  return {
+    overallAccuracy: Math.round(accuracy * 100),
+    totalQuestionsAnswered: totalQuestions,
+    correctAnswers: correctAnswers,
+    strongTopics: strongTopics,
+    weakTopics: weakTopics,
+    recommendations: recommendations,
+    readyForNextLevel: accuracy > 0.75 && totalQuestions >= 3
   }
 }

@@ -7,11 +7,15 @@ export interface AgentResponse {
   // Question generation specific
   question?: Question
   encouragement?: string
+  blocked?: boolean
+  message?: string
   // Answer checking specific
   feedback?: AnswerFeedback
   performanceMessage?: string
   nextSteps?: string
   fallbackFeedback?: AnswerFeedback
+  updatedSessionState?: any
+  sessionInsights?: any
   // Tutor chat specific
   suggestedActions?: string[]
   followUpEncouragement?: string
@@ -38,7 +42,6 @@ export interface AgentResponse {
   }
   // Notes generation specific (legacy fields for backward compatibility)
   notes?: string
-  message?: string
   analysis?: string
   flashcards?: string
   // Enhanced notes generation response structure
@@ -120,14 +123,29 @@ export class AIAgent {
     topic: string, 
     difficulty: 'easy' | 'medium' | 'hard', 
     content: string,
-    previousQuestions: Question[] = []
+    previousQuestions: Question[] = [],
+    studentSession?: any,
+    forceGenerate: boolean = false
   ): Promise<AgentResponse> {
     try {
       const { safePostJSON } = await import('./fetch-helper')
-      const result = await safePostJSON(`${this.baseUrl}/generate-question`, { topic, difficulty, content, previousQuestions })
+      const result = await safePostJSON(`${this.baseUrl}/generate-question`, { 
+        topic, 
+        difficulty, 
+        content, 
+        previousQuestions, 
+        studentSession,
+        forceGenerate 
+      })
       
       if (!result.success) {
-        return { success: false, error: result.error || 'Failed to generate question' }
+        return { 
+          success: false, 
+          error: result.error || 'Failed to generate question',
+          blocked: result.blocked || false,
+          message: result.message,
+          metadata: result.metadata
+        }
       }
       
       return result.data
@@ -140,11 +158,19 @@ export class AIAgent {
   async checkAnswer(
     question: Question,
     userAnswer: string,
-    studentContext?: any
+    studentContext?: any,
+    studentSession?: any,
+    responseStartTime?: number
   ): Promise<AgentResponse> {
     try {
       const { safePostJSON } = await import('./fetch-helper')
-      const result = await safePostJSON(`${this.baseUrl}/check-answer`, { question, userAnswer, studentContext })
+      const result = await safePostJSON(`${this.baseUrl}/check-answer`, { 
+        question, 
+        userAnswer, 
+        studentContext, 
+        studentSession,
+        responseStartTime
+      })
       
       if (!result.success) {
         return { success: false, error: result.error || 'Failed to check answer' }
