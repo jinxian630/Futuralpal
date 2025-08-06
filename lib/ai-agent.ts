@@ -92,7 +92,7 @@ export interface AnswerFeedback {
 // Chat-first learning - no file processing needed
 
 export class AIAgent {
-  private baseUrl = '/api'
+  private baseUrl = '/personal/api'
   private conversationHistory: Array<{ role: string; content: string; timestamp: string }> = []
 
   // Conversation memory management
