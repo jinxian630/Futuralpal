@@ -13,7 +13,7 @@ export interface StudySession {
   averageResponseTime: number
   notesGenerated: boolean
   flashcardsCreated: boolean
-  aiModel: 'DeepSeek V3'
+  aiModel: 'openai/gpt-4o'
   contentType: 'text' // DeepSeek V3 only supports text
 }
 

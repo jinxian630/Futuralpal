@@ -173,6 +173,7 @@ const DigitalRoomPage = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
+                    
                     <Target size={16} className="text-purple-500" />
                     <span className="text-sm text-gray-600">Quizzes</span>
                   </div>
