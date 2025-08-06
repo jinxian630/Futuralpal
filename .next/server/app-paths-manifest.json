@@ -1,5 +1,4 @@
 {
-  "/personal/api/generate-question/route": "app/personal/api/generate-question/route.js",
   "/page": "app/page.js",
   "/personal/ai-tutor/page": "app/personal/ai-tutor/page.js"
 }
