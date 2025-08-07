@@ -16,8 +16,11 @@ import {
   BookOpen,
   Trophy,
   Menu,
-  X
+  X,
+  Upload,
+  LogOut
 } from 'lucide-react'
+import { Teachers } from 'next/font/google';
 
 
 
@@ -28,15 +31,19 @@ const Sidebar = () => {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
+  const handleLogout = () => {
+    // Clear any local storage or session data if needed
+    // Redirect to landing page
+    window.location.href = '/'
+  }
+
   const navigationItems = [
-    { icon: Home, label: 'Dashboard', href: '/' },
+    { icon: Home, label: 'Dashboard', href: '/personal/dashboard' },
     { icon: GraduationCap, label: 'AI Tutor', href: '/personal/ai-tutor' },
     { icon: ShoppingCart, label: 'Marketplace', href: '/personal/marketplace' },
     { icon: Users, label: 'Digital Room', href: '/personal/digital-room' },
-    { icon: BookOpen, label: 'My Courses', href: '/personal/courses' },
-    { icon: Trophy, label: 'Achievements', href: '/personal/achievements' },
-    { icon: MessageSquare, label: 'Messages', href: '/personal/messages' },
-    { icon: Settings, label: 'Settings', href: '/personal/settings' },
+    { icon: BookOpen, label: 'Courses', href: '/personal/courses' },
+    { icon: Upload, label: 'Tutor Upload Courses', href: '/personal/tutor' },
   ]
 
   return (
@@ -92,16 +99,34 @@ const Sidebar = () => {
       {/* Footer */}
       <div className="p-4 border-t border-primary-600">
         {!isCollapsed && (
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <div className="text-sm">
+                <p className="font-medium">Josh</p>
+                <p className="text-blue-200">{formatAddress(walletAddress)}</p>
+                <p className="text-blue-200">Online</p>
+              </div>
             </div>
-            <div className="text-sm">
-              <p className="font-medium">Josh</p>
-              <p className="text-blue-200">{formatAddress(walletAddress)}</p>
-              <p className="text-blue-200">Online</p>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 hover:bg-red-600 hover:shadow-md text-blue-200 hover:text-white"
+            >
+              <LogOut size={20} />
+              <span className="font-medium">Logout</span>
+            </button>
           </div>
+        )}
+        {isCollapsed && (
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center p-3 rounded-lg transition-all duration-200 hover:bg-red-600 hover:shadow-md text-blue-200 hover:text-white"
+            title="Logout"
+          >
+            <LogOut size={20} />
+          </button>
         )}
       </div>
     </div>

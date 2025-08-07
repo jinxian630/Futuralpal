@@ -1,27 +1,82 @@
-'use client'
-
-import { useSearchParams } from 'next/navigation';
+import { GetServerSideProps } from 'next'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth/authOptions'
+import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import { Search, Bell, ChevronLeft, ChevronRight, Clock, Users, Award, BookOpen, TrendingUp } from 'lucide-react'
+import { Search, Bell, ChevronLeft, ChevronRight, Clock, Users, Award, BookOpen, TrendingUp, LogOut } from 'lucide-react'
+import { useRouter } from 'next/router'
 import StatsCard from '@/components/StatsCard'
 import CourseCard from '@/components/CourseCard'
 import ProgressChart from '@/components/ProgressChart'
 import WelcomeSection from '@/components/WelcomeSection'
+import OnboardingModal from '@/components/OnboardingModal'
+import { useUser } from '@/lib/hooks/useUser'
+import { generateAvatarFromAddress } from '@/lib/utils/wallet'
 
-const Dashboard = () => {
-  const searchParams = useSearchParams();
-  const walletAddress = searchParams.get('address');
+interface DashboardProps {
+  session: any
+  hasValidSession: boolean
+}
 
+const Dashboard = ({ session: serverSession, hasValidSession }: DashboardProps) => {
+  const router = useRouter()
+  const { data: clientSession } = useSession()
   const [searchQuery, setSearchQuery] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const { user, isAuthenticated, loginWithAddress, logout, isLoading } = useUser()
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
 
+  // Show onboarding for first-time users
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const hasCompletedOnboarding = localStorage.getItem('futuropal_onboarding_completed')
+      if (!hasCompletedOnboarding && (user.isFirstTime || !hasCompletedOnboarding)) {
+        setShowOnboarding(true)
+      }
+    }
+  }, [isAuthenticated, user])
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push('/')
+    } catch (error) {
+      console.error('Failed to logout:', error)
+      router.push('/')
+    }
+  }
+
+  const getUserAvatar = () => {
+    if (user?.picture) {
+      return user.picture
+    }
+    
+    if (user?.address) {
+      return generateAvatarFromAddress(user.address)
+    }
+    
+    return generateAvatarFromAddress('default')
+  }
+
+  const getUserInitial = () => {
+    if (user?.name) {
+      return user.name.charAt(0).toUpperCase()
+    }
+    return 'U'
+  }
+
+  // Use session data (server or client) for display
+  const session = clientSession || serverSession
+  const displayName = user?.name || session?.user?.name || 'User'
+  const displayEmail = user?.email || session?.user?.email
+
   const stats = [
-    { label: 'NFT Points', value: '111', icon: Award, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
+    { label: 'NFT Points', value: user?.nftPoints?.toString() || '0', icon: Award, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
     { label: 'Digital Room Design', value: '2', icon: Users, color: 'bg-gradient-to-r from-blue-500 to-indigo-500' },
     { label: 'Courses Completed', value: '11', icon: BookOpen, color: 'bg-gradient-to-r from-green-500 to-teal-500' },
     { label: 'Courses in Progress', value: '4', icon: TrendingUp, color: 'bg-gradient-to-r from-orange-500 to-red-500' },
@@ -72,8 +127,26 @@ const Dashboard = () => {
 
   const courseFilters = ['All Courses', 'The Newest', 'Top Rated', 'Most Popular']
 
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 space-y-6">
+      {/* Server-side protection indicator */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+        <p className="text-sm text-green-800">
+          🛡️ This dashboard is server-side protected. Session validated: {hasValidSession ? '✅' : '❌'}
+        </p>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -96,13 +169,32 @@ const Dashboard = () => {
             </span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">J</span>
+            <div className="relative">
+              {session?.user?.image ? (
+                <img 
+                  src={session.user.image} 
+                  alt="Profile" 
+                  className="w-10 h-10 rounded-full border-2 border-gray-200"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">{getUserInitial()}</span>
+                </div>
+              )}
             </div>
             <div>
-              <p className="text-sm font-medium">Josh</p>
-              <p className="text-xs text-gray-500">Student</p>
+              <p className="text-sm font-medium">{displayName}</p>
+              <p className="text-xs text-gray-500">
+                {hasValidSession ? 'Authenticated User' : 'Student'}
+              </p>
             </div>
+            <button
+              onClick={handleLogout}
+              className="ml-2 p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Logout"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </div>
@@ -201,8 +293,54 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Onboarding Modal */}
+      <OnboardingModal 
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+      />
     </div>
   )
 }
 
-export default Dashboard 
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  console.log('🛡️ Server-side dashboard protection check...')
+  
+  try {
+    const session = await getServerSession(context.req, context.res, authOptions)
+    
+    console.log('📋 Server session status:', {
+      hasSession: !!session,
+      userEmail: session?.user?.email,
+      hasIdToken: !!(session as any)?.idToken
+    })
+
+    if (!session) {
+      console.log('❌ No session found, redirecting to register')
+      return {
+        redirect: {
+          destination: '/register',
+          permanent: false,
+        },
+      }
+    }
+
+    console.log('✅ Valid session found, allowing dashboard access')
+    return {
+      props: {
+        session,
+        hasValidSession: true
+      },
+    }
+  } catch (error) {
+    console.error('💥 Error in getServerSideProps:', error)
+    return {
+      redirect: {
+        destination: '/register',
+        permanent: false,
+      },
+    }
+  }
+}
+
+export default Dashboard

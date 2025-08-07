@@ -12,22 +12,26 @@
   "dependencies": {
     "@mysten/dapp-kit": "^0.17.2",
     "@mysten/sui.js": "^0.54.1",
+    "@mysten/zklogin": "^0.8.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^24.0.13",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "autoprefixer": "^10.4.0",
+    "axios": "^1.11.0",
     "dotenv": "^17.2.1",
     "eslint": "^9.31.0",
     "eslint-config-next": "^15.3.5",
     "firebase-admin": "^13.4.0",
     "framer-motion": "^10.16.0",
     "gpt-tokenizer": "^3.0.1",
+    "jose": "^6.0.12",
     "lucide-react": "^0.292.0",
     "mammoth": "^1.9.1",
-    "openai": "^5.11.0",
     "next": "^15.4.5",
+    "next-auth": "^4.24.11",
+    "openai": "^5.11.0",
     "pdf-parse": "^1.1.1",
     "postcss": "^8.4.0",
     "react": "^18.2.0",
@@ -44,6 +48,5 @@
     "dashboard"
   ],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {}
+  "license": "ISC"
 }

@@ -11,36 +11,21 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/personal/layout": [
+    "/register/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/personal/layout.css",
-      "static/chunks/app/personal/layout.js"
+      "static/css/app/register/page.css",
+      "static/chunks/app/register/page.js"
     ],
-    "/personal/dashboard/page": [
+    "/api/auth/[...nextauth]/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/personal/dashboard/page.js"
+      "static/chunks/app/api/auth/[...nextauth]/route.js"
     ],
-    "/personal/ai-tutor/page": [
+    "/api/zklogin/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/personal/ai-tutor/page.js"
-    ],
-    "/personal/api/update-progress/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/update-progress/route.js"
-    ],
-    "/personal/api/tutor-chat/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/tutor-chat/route.js"
-    ],
-    "/personal/api/generate-question/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/generate-question/route.js"
+      "static/chunks/app/api/zklogin/route.js"
     ]
   }
 }

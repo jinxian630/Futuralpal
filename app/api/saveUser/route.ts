@@ -47,30 +47,45 @@ export async function POST(req: Request) {
 
   const db = getFirestore();
   console.log(db);
-  let address;
+  let address, loginType, email, name, picture;
   try {
     const body = await req.json();
     address = body.address;
+    loginType = body.loginType || 'wallet';
+    email = body.email;
+    name = body.name;
+    picture = body.picture;
     console.log('Parsed request body:', body);
   } catch (error) {
     console.error('Failed to parse request body:', (error as Error).message);
     return NextResponse.json({ error: 'Invalid request body', details: (error as Error).message }, { status: 400 });
   }
 
-  console.log('Received address:', address);
+  console.log('Received data:', { address, loginType, email, name });
   if (!address || typeof address !== 'string') {
     return NextResponse.json({ error: 'Invalid address' }, { status: 400 });
   }
 
   try {
     const docRef = db.collection('users').doc(address);
-    await docRef.set({
+    const userData: any = {
       address,
-      name: "User",
+      name: name || "User",
       admin: false,
       nft_points: 0,
-    });
-    console.log(`User saved for address: ${address} at docRef: ${docRef.path}`);
+      loginType,
+      createdAt: new Date(),
+      lastLogin: new Date(),
+    };
+
+    // Add additional fields for zkLogin users
+    if (loginType === 'zklogin') {
+      userData.email = email;
+      userData.picture = picture;
+    }
+
+    await docRef.set(userData);
+    console.log(`User saved for address: ${address} at docRef: ${docRef.path} with loginType: ${loginType}`);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('Firestore write failed:', {

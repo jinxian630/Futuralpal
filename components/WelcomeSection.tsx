@@ -1,10 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Play } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, Copy, ExternalLink } from 'lucide-react'
+import { useUser } from '@/lib/hooks/useUser'
+import { formatSuiAddress, getSuiExplorerUrl, copyToClipboard } from '@/lib/utils/wallet'
 
 const WelcomeSection = () => {
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [showCopied, setShowCopied] = useState(false)
+  const { user, isAuthenticated } = useUser()
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -24,6 +28,27 @@ const WelcomeSection = () => {
     if (hour < 18) return 'afternoon'
     return 'evening'
   }
+
+  const handleCopyAddress = async () => {
+    if (user?.address) {
+      try {
+        await copyToClipboard(user.address)
+        setShowCopied(true)
+        setTimeout(() => setShowCopied(false), 2000)
+      } catch (error) {
+        console.error('Failed to copy address:', error)
+      }
+    }
+  }
+
+  const handleViewOnExplorer = () => {
+    if (user?.address) {
+      const explorerUrl = getSuiExplorerUrl(user.address)
+      window.open(explorerUrl, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const displayName = user?.name || 'User'
 
   return (
     <div className="bg-gradient-to-r from-primary-600 to-secondary-600 rounded-xl p-8 text-white relative overflow-hidden">
@@ -51,13 +76,51 @@ const WelcomeSection = () => {
           </div>
 
           {/* Welcome Message */}
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              {getGreeting()}, Josh!
-            </h1>
-            <p className="text-blue-100 text-lg">
+          <div className="flex-1">
+            <div className="flex items-center space-x-3 mb-2">
+              <h1 className="text-3xl font-bold">
+                {getGreeting()}, {displayName}!
+              </h1>
+              {user?.picture && (
+                <img 
+                  src={user.picture} 
+                  alt="Profile" 
+                  className="w-10 h-10 rounded-full border-2 border-white"
+                />
+              )}
+            </div>
+            <p className="text-blue-100 text-lg mb-3">
               It's good to see you again. Ready to continue your learning journey this {getTimeOfDay()}?
             </p>
+            
+            {/* Wallet Address Display */}
+            {isAuthenticated && user?.address && (
+              <div className="flex items-center space-x-2 bg-white bg-opacity-10 rounded-lg px-4 py-2 max-w-fit">
+                <div className="text-sm">
+                  <span className="text-blue-200">Wallet: </span>
+                  <span className="font-mono text-white">{formatSuiAddress(user.address)}</span>
+                </div>
+                <button
+                  onClick={handleCopyAddress}
+                  className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
+                  title="Copy address"
+                >
+                  <Copy size={14} />
+                </button>
+                <button
+                  onClick={handleViewOnExplorer}
+                  className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
+                  title="View on Sui Explorer"
+                >
+                  <ExternalLink size={14} />
+                </button>
+                {showCopied && (
+                  <span className="text-xs text-green-300 animate-fade-in">
+                    Copied!
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
