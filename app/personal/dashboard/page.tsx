@@ -1,10 +1,8 @@
-import { GetServerSideProps } from 'next'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth/authOptions'
-import { useSession } from 'next-auth/react'
+'use client'
+
 import { useState, useEffect } from 'react'
 import { Search, Bell, ChevronLeft, ChevronRight, Clock, Users, Award, BookOpen, TrendingUp, LogOut } from 'lucide-react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import StatsCard from '@/components/StatsCard'
 import CourseCard from '@/components/CourseCard'
 import ProgressChart from '@/components/ProgressChart'
@@ -13,14 +11,8 @@ import OnboardingModal from '@/components/OnboardingModal'
 import { useUser } from '@/lib/hooks/useUser'
 import { generateAvatarFromAddress } from '@/lib/utils/wallet'
 
-interface DashboardProps {
-  session: any
-  hasValidSession: boolean
-}
-
-const Dashboard = ({ session: serverSession, hasValidSession }: DashboardProps) => {
+const Dashboard = () => {
   const router = useRouter()
-  const { data: clientSession } = useSession()
   const [searchQuery, setSearchQuery] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -70,10 +62,9 @@ const Dashboard = ({ session: serverSession, hasValidSession }: DashboardProps) 
     return 'U'
   }
 
-  // Use session data (server or client) for display
-  const session = clientSession || serverSession
-  const displayName = user?.name || session?.user?.name || 'User'
-  const displayEmail = user?.email || session?.user?.email
+  // Use user data for display
+  const displayName = user?.name || 'User'
+  const displayEmail = user?.email
 
   const stats = [
     { label: 'NFT Points', value: user?.nftPoints?.toString() || '0', icon: Award, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
@@ -140,13 +131,6 @@ const Dashboard = ({ session: serverSession, hasValidSession }: DashboardProps) 
 
   return (
     <div className="p-6 space-y-6">
-      {/* Server-side protection indicator */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-        <p className="text-sm text-green-800">
-          🛡️ This dashboard is server-side protected. Session validated: {hasValidSession ? '✅' : '❌'}
-        </p>
-      </div>
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -170,9 +154,9 @@ const Dashboard = ({ session: serverSession, hasValidSession }: DashboardProps) 
           </div>
           <div className="flex items-center space-x-3">
             <div className="relative">
-              {session?.user?.image ? (
+              {user?.picture ? (
                 <img 
-                  src={session.user.image} 
+                  src={user.picture} 
                   alt="Profile" 
                   className="w-10 h-10 rounded-full border-2 border-gray-200"
                 />
@@ -184,9 +168,7 @@ const Dashboard = ({ session: serverSession, hasValidSession }: DashboardProps) 
             </div>
             <div>
               <p className="text-sm font-medium">{displayName}</p>
-              <p className="text-xs text-gray-500">
-                {hasValidSession ? 'Authenticated User' : 'Student'}
-              </p>
+              <p className="text-xs text-gray-500">Student</p>
             </div>
             <button
               onClick={handleLogout}
@@ -280,13 +262,22 @@ const Dashboard = ({ session: serverSession, hasValidSession }: DashboardProps) 
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <button className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow">
+              <button 
+                onClick={() => router.push('/personal/ai-tutor')}
+                className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow"
+              >
                 Start AI Tutor Session
               </button>
-              <button className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow">
+              <button 
+                onClick={() => router.push('/personal/ai-tutor')}
+                className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow"
+              >
                 Generate Quiz
               </button>
-              <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow">
+              <button 
+                onClick={() => router.push('/personal/tutor')}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-shadow"
+              >
                 Upload Study Material
               </button>
             </div>
@@ -301,46 +292,6 @@ const Dashboard = ({ session: serverSession, hasValidSession }: DashboardProps) 
       />
     </div>
   )
-}
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  console.log('🛡️ Server-side dashboard protection check...')
-  
-  try {
-    const session = await getServerSession(context.req, context.res, authOptions)
-    
-    console.log('📋 Server session status:', {
-      hasSession: !!session,
-      userEmail: session?.user?.email,
-      hasIdToken: !!(session as any)?.idToken
-    })
-
-    if (!session) {
-      console.log('❌ No session found, redirecting to register')
-      return {
-        redirect: {
-          destination: '/register',
-          permanent: false,
-        },
-      }
-    }
-
-    console.log('✅ Valid session found, allowing dashboard access')
-    return {
-      props: {
-        session,
-        hasValidSession: true
-      },
-    }
-  } catch (error) {
-    console.error('💥 Error in getServerSideProps:', error)
-    return {
-      redirect: {
-        destination: '/register',
-        permanent: false,
-      },
-    }
-  }
 }
 
 export default Dashboard

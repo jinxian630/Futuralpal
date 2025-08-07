@@ -1,6 +1,14 @@
 {
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/zklogin/route": "app/api/zklogin/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/personal/api/update-progress/route": "app/personal/api/update-progress/route.js",
   "/register/page": "app/register/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/personal/dashboard/page": "app/personal/dashboard/page.js",
+  "/personal/digital-room/page": "app/personal/digital-room/page.js",
+  "/personal/marketplace/page": "app/personal/marketplace/page.js",
+  "/personal/ai-tutor/page": "app/personal/ai-tutor/page.js",
+  "/personal/tutor/page": "app/personal/tutor/page.js",
+  "/personal/courses/page": "app/personal/courses/page.js",
+  "/personal/profile/page": "app/personal/profile/page.js"
 }

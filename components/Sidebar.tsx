@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   Upload,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react'
 import { Teachers } from 'next/font/google';
 
@@ -44,6 +45,7 @@ const Sidebar = () => {
     { icon: Users, label: 'Digital Room', href: '/personal/digital-room' },
     { icon: BookOpen, label: 'Courses', href: '/personal/courses' },
     { icon: Upload, label: 'Tutor Upload Courses', href: '/personal/tutor' },
+    { icon: User, label: 'Profile', href: '/personal/profile' },
   ]
 
   return (
