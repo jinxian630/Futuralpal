@@ -49,9 +49,6 @@ const FuturopalWebsite = () => {
               <button onClick={() => scrollToSection('digital-room')} className="text-slate-700 hover:text-blue-600 font-medium transition-colors">
                 Digital Room
               </button>
-              <Link href="personal/dashboard" className="text-slate-700 hover:text-blue-600 font-medium transition-colors">
-                Login
-              </Link>
             </div>
 
             {/* Auth Buttons */}

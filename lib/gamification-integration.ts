@@ -4,8 +4,10 @@
 import { GamificationEngine, XP_ACTIONS, ACHIEVEMENTS } from './gamification'
 import { StudentAnalysis, GamificationContext } from './types/student'
 
-// Initialize gamification system
-const gamificationEngine = new GamificationEngine()
+import { StorageFactory } from './storage-factory'
+
+// Initialize gamification system with server-side storage
+const gamificationEngine = new GamificationEngine(StorageFactory.createServerStorage())
 
 // 🎮 XP Calculation for Tutor Interactions
 export function calculateTutorXP(
@@ -455,16 +457,19 @@ export function integrateProgressWithResponse(
 } {
   let enhancedResponse = response
   
-  // Add motivational section to response
+  // Add motivational section to response (XP display removed to prevent sync issues)
   let gamificationSection = '\n\n---\n\n'
   gamificationSection += gamificationResults.motivationalMessage.primaryMessage + '\n\n'
-  gamificationSection += `💎 ${gamificationResults.motivationalMessage.xpAnnouncement}\n`
+  
+  // Removed XP announcement to prevent frontend/backend sync confusion
+  // gamificationSection += `💎 ${gamificationResults.motivationalMessage.xpAnnouncement}\n`
   
   if (gamificationResults.motivationalMessage.achievementCelebration) {
     gamificationSection += `${gamificationResults.motivationalMessage.achievementCelebration}\n`
   }
   
-  gamificationSection += `${gamificationResults.motivationalMessage.nextGoalMotivation}\n\n`
+  // Removed level progress to prevent frontend/backend sync confusion  
+  // gamificationSection += `${gamificationResults.motivationalMessage.nextGoalMotivation}\n\n`
   gamificationSection += gamificationResults.motivationalMessage.personalizedEncouragement
   
   enhancedResponse += gamificationSection

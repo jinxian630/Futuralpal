@@ -13,6 +13,7 @@
     "@mysten/dapp-kit": "^0.17.2",
     "@mysten/sui.js": "^0.54.1",
     "@mysten/zklogin": "^0.8.1",
+    "@prisma/client": "^6.13.0",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^24.0.13",
@@ -27,6 +28,7 @@
     "framer-motion": "^10.16.0",
     "gpt-tokenizer": "^3.0.1",
     "jose": "^6.0.12",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.292.0",
     "mammoth": "^1.9.1",
     "next": "^15.4.5",
@@ -34,6 +36,7 @@
     "openai": "^5.11.0",
     "pdf-parse": "^1.1.1",
     "postcss": "^8.4.0",
+    "prisma": "^6.13.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sui": "^1.0.0",
@@ -48,5 +51,9 @@
     "dashboard"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/pdf-parse": "^1.1.5"
+  }
 }

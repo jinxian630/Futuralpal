@@ -18,6 +18,20 @@ const Dashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const { user, isAuthenticated, loginWithAddress, logout, isLoading } = useUser()
 
+  // Add debugging for user data
+  useEffect(() => {
+    console.log('🏠 Dashboard: User state changed', {
+      hasUser: !!user,
+      isAuthenticated,
+      isLoading,
+      userEmail: user?.email,
+      userName: user?.name,
+      userAddress: user?.address,
+      loginType: user?.loginType,
+      nftPoints: user?.nftPoints
+    })
+  }, [user, isAuthenticated, isLoading])
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
     return () => clearInterval(timer)

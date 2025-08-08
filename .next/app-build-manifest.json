@@ -11,21 +11,40 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/register/page": [
+    "/api/auth/me/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/register/page.css",
-      "static/chunks/app/register/page.js"
+      "static/chunks/app/api/auth/me/route.js"
     ],
     "/api/auth/[...nextauth]/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/auth/[...nextauth]/route.js"
     ],
+    "/register/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/register/page.css",
+      "static/chunks/app/register/page.js"
+    ],
+    "/api/zklogin/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/zklogin/route.js"
+    ],
+    "/api/auth/oidc-verify/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/oidc-verify/route.js"
+    ],
+    "/api/auth/zklogin-verify/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/zklogin-verify/route.js"
+    ],
     "/personal/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/personal/layout.css",
       "static/chunks/app/personal/layout.js"
     ],
     "/personal/dashboard/page": [
@@ -33,45 +52,60 @@
       "static/chunks/main-app.js",
       "static/chunks/app/personal/dashboard/page.js"
     ],
+    "/personal/courses/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/courses/page.js"
+    ],
     "/personal/ai-tutor/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/personal/ai-tutor/page.js"
+    ],
+    "/personal/api/user-progress/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/api/user-progress/route.js"
     ],
     "/personal/api/update-progress/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/personal/api/update-progress/route.js"
     ],
-    "/personal/marketplace/page": [
+    "/personal/api/tutor-chat/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/personal/marketplace/page.js"
+      "static/chunks/app/personal/api/tutor-chat/route.js"
     ],
-    "/personal/digital-room/page": [
+    "/personal/api/generate-flashcards/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/personal/digital-room/page.js"
+      "static/chunks/app/personal/api/generate-flashcards/route.js"
     ],
-    "/personal/courses/page": [
+    "/personal/api/generate-examples/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/personal/courses/page.js"
+      "static/chunks/app/personal/api/generate-examples/route.js"
     ],
-    "/personal/tutor/page": [
+    "/personal/api/generate-step-by-step/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/personal/tutor/page.js"
+      "static/chunks/app/personal/api/generate-step-by-step/route.js"
     ],
-    "/personal/profile/page": [
+    "/personal/api/generate-practice-questions/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/personal/profile/page.js"
+      "static/chunks/app/personal/api/generate-practice-questions/route.js"
     ],
-    "/_not-found/page": [
+    "/personal/api/generate-question/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/personal/api/generate-question/route.js"
+    ],
+    "/personal/api/check-answer/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/api/check-answer/route.js"
     ]
   }
 }

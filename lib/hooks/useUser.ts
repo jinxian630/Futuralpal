@@ -4,32 +4,35 @@ import { useCallback } from 'react'
 import { useUserContext, User } from '../contexts/UserContext'
 
 export function useUser() {
-  const { state, login, logout, updateUser, loadUserFromStorage } = useUserContext()
+  const { state, login, logout, updateUser, loadUserFromSession, forceRefreshSession } = useUserContext()
 
-  const fetchUserData = useCallback(async (address: string) => {
+  const fetchUserData = useCallback(async (address?: string) => {
     try {
-      // For hackathon demo - use localStorage instead of API
-      if (typeof window !== 'undefined') {
-        const { getUserFromStorage } = await import('../utils/localStorage')
-        const user = getUserFromStorage(address)
-        
-        if (!user) {
-          throw new Error('User not found')
-        }
-        
-        return user as User
-      } else {
-        throw new Error('localStorage not available on server side')
+      // Fetch current user from backend session
+      const response = await fetch('/api/auth/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data from backend')
       }
+
+      const result = await response.json()
+      if (!result.user) {
+        throw new Error('No user session found')
+      }
+
+      return result.user as User
     } catch (error) {
-      console.error('Error fetching user data:', error)
+      console.error('Error fetching user data from backend:', error)
       throw error
     }
   }, [])
 
-  const loginWithAddress = useCallback(async (address: string) => {
+  const loginWithAddress = useCallback(async (address?: string) => {
     try {
-      const userData = await fetchUserData(address)
+      const userData = await fetchUserData()
       login(userData)
       return userData
     } catch (error) {
@@ -39,26 +42,15 @@ export function useUser() {
   }, [fetchUserData, login])
 
   const refreshUserData = useCallback(async () => {
-    if (!state.user?.address) {
-      throw new Error('No user address available')
-    }
-
     try {
-      const userData = await fetchUserData(state.user.address)
+      const userData = await fetchUserData()
       updateUser(userData)
-      
-      // Also update localStorage with latest data
-      if (typeof window !== 'undefined') {
-        const { updateUserInStorage } = await import('../utils/localStorage')
-        updateUserInStorage(state.user.address, userData)
-      }
-      
       return userData
     } catch (error) {
       console.error('Failed to refresh user data:', error)
       throw error
     }
-  }, [state.user?.address, fetchUserData, updateUser])
+  }, [fetchUserData, updateUser])
 
   const incrementNftPoints = useCallback((points: number = 1) => {
     if (state.user) {
@@ -80,7 +72,8 @@ export function useUser() {
     loginWithAddress,
     fetchUserData,
     refreshUserData,
-    loadUserFromStorage,
+    loadUserFromSession,
+    forceRefreshSession,
     incrementNftPoints,
 
     // Computed values

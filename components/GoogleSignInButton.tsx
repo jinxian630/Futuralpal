@@ -8,22 +8,74 @@ import { useUser } from '@/lib/hooks/useUser'
 interface GoogleSignInButtonProps {
   onSuccess?: (address: string) => void
   onError?: (error: string) => void
+  disableAutoRedirect?: boolean // Allow parent to handle redirect
+  customRedirectPath?: string // Custom path for redirect
+  showLoginButton?: boolean // Show "Login to FuturoPal" button on success
 }
 
-const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSuccess, onError }) => {
+const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ 
+  onSuccess, 
+  onError, 
+  disableAutoRedirect = false,
+  customRedirectPath,
+  showLoginButton = false
+}) => {
   const [isLoading, setIsLoading] = useState(false)
   const [zkLoginStep, setZkLoginStep] = useState<'idle' | 'authenticating' | 'processing' | 'complete' | 'redirecting'>('idle')
+  const [successUserData, setSuccessUserData] = useState<{name?: string, email?: string, picture?: string, address?: string} | null>(null)
   const router = useRouter()
   const { data: session, status } = useSession()
-  const { login } = useUser()
+  const { login, forceRefreshSession } = useUser()
 
-  // Auto-trigger zkLogin when session becomes available
+  const handleManualLoginToFuturoPal = async () => {
+    if (!successUserData?.address) return
+    
+    setZkLoginStep('redirecting')
+    console.log('🚀 Manual login to FuturoPal triggered...')
+    
+    try {
+      const redirectPath = customRedirectPath || '/personal/dashboard'
+      await router.push(redirectPath)
+      console.log(`✅ Successfully redirected to ${redirectPath}`)
+    } catch (error) {
+      console.error('❌ Manual redirect failed:', error)
+      onError?.('Redirect failed. Please try again.')
+      setZkLoginStep('complete')
+    }
+  }
+
+  // Auto-trigger zkLogin when session becomes available or on mount if already authenticated
   useEffect(() => {
-    if (status === 'authenticated' && session && zkLoginStep === 'authenticating') {
-      setZkLoginStep('processing')
-      processZkLogin()
+    if (status === 'authenticated' && session) {
+      const idToken = (session as any)?.idToken
+      
+      // If we have a session with idToken but no zkLogin processing has happened yet
+      if (idToken && (zkLoginStep === 'idle' || zkLoginStep === 'authenticating')) {
+        console.log('🔄 Session found with idToken, starting zkLogin processing...')
+        setZkLoginStep('processing')
+        setIsLoading(true) // Ensure loading state is set
+        processZkLogin()
+      }
     }
   }, [status, session, zkLoginStep])
+
+  // Additional effect to handle session changes more reliably
+  useEffect(() => {
+    if (status === 'authenticated' && session && zkLoginStep === 'authenticating') {
+      // Small delay to ensure session is fully established
+      const timer = setTimeout(() => {
+        const idToken = (session as any)?.idToken
+        if (idToken) {
+          console.log('🔄 Session established, processing zkLogin...')
+          setZkLoginStep('processing')
+          setIsLoading(true)
+          processZkLogin()
+        }
+      }, 500)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [status, session])
 
   const handleGoogleSignIn = async () => {
     try {
@@ -78,6 +130,7 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSuccess, onEr
       }
 
       console.log('✅ Google OAuth successful, waiting for session...')
+      // Keep loading state while waiting for session to be established
       // The useEffect hook will trigger zkLogin processing when session is ready
 
     } catch (error) {
@@ -133,8 +186,9 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSuccess, onEr
       console.log('🎉 zkLogin successful! Generated address:', zkResult.address)
       setZkLoginStep('complete')
 
-      // Create user object from backend response
-      const user = {
+      // Use user data from backend - NO localStorage operations
+      const user = zkResult.user || {
+        // Fallback if backend doesn't return user (shouldn't happen)
         address: zkResult.address,
         name: zkResult.userInfo?.name || session?.user?.name || 'User',
         email: zkResult.userInfo?.email || session?.user?.email,
@@ -144,43 +198,68 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSuccess, onEr
         admin: false,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
-        isFirstTime: true // Mark as first time for onboarding
+        isFirstTime: true
       }
 
-      // Save to localStorage (frontend responsibility)
-      try {
-        const { saveUserToStorage } = await import('@/lib/utils/localStorage')
-        saveUserToStorage(user)
-        console.log('✅ User saved to localStorage:', user.address)
-      } catch (storageError) {
-        console.error('Failed to save user to localStorage:', storageError)
-        // Continue anyway - context will still work
-      }
+      console.log('✅ User data received from backend:', {
+        address: user.address,
+        email: user.email,
+        isFirstTime: user.isFirstTime
+      })
 
-      // Login user through context
+      // Store user data for success display
+      setSuccessUserData({
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        address: zkResult.address
+      })
+
+      // Login user through context (no localStorage - backend handles persistence)
       login(user)
+
+      // Force refresh session to ensure UserContext is synchronized with backend
+      console.log('🔄 Forcing session refresh for synchronization...')
+      try {
+        await forceRefreshSession()
+        console.log('✅ Session synchronization completed')
+      } catch (syncError) {
+        console.warn('⚠️ Session sync failed, but continuing with login:', syncError)
+      }
 
       // Call success callback with the generated address
       onSuccess?.(zkResult.address)
 
-      // Show redirecting state
-      setZkLoginStep('redirecting')
+      // Handle redirect based on props
+      if (!disableAutoRedirect) {
+        // Show redirecting state
+        setZkLoginStep('redirecting')
 
-      // Add small delay to ensure NextAuth session is fully established for SSR validation
-      console.log('⏳ Waiting for session synchronization...')
-      await new Promise(resolve => setTimeout(resolve, 1500))
+        // Add delay to ensure UserContext is fully updated before redirect
+        console.log('⏳ Waiting for UserContext synchronization...')
+        await new Promise(resolve => setTimeout(resolve, 2000))
 
-      // Redirect to SSR-protected dashboard
-      try {
-        console.log('🚀 Redirecting to SSR-protected dashboard...')
-        await router.push('/personal/dashboard')
-        console.log('✅ Successfully redirected to dashboard')
-      } catch (redirectError) {
-        console.error('❌ Redirect failed:', redirectError)
-        // Show error and provide manual option
-        setZkLoginStep('idle')
+        // Use custom redirect path or default to personal area
+        const redirectPath = customRedirectPath || '/personal'
+        
+        try {
+          console.log(`🚀 Redirecting to ${redirectPath}...`)
+          await router.push(redirectPath)
+          console.log(`✅ Successfully redirected to ${redirectPath}`)
+        } catch (redirectError) {
+          console.error('❌ Redirect failed:', redirectError)
+          // Show error and provide manual option
+          setZkLoginStep('idle')
+          setIsLoading(false)
+          onError?.('Login successful but redirect failed. Please navigate manually.')
+        }
+      } else {
+        // If auto redirect is disabled, just complete the login process
+        console.log('✅ Login completed successfully, redirect handled by parent')
+        console.log('🔍 Success user data set:', successUserData)
+        console.log('🔍 Show login button:', showLoginButton)
+        setZkLoginStep('complete')
         setIsLoading(false)
-        onError?.('Login successful but redirect failed. Please click Dashboard manually.')
       }
 
     } catch (error) {
@@ -221,6 +300,67 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSuccess, onEr
           <div className="mt-2 text-xs text-blue-600 animate-pulse">
             Taking you to your dashboard...
           </div>
+        )}
+      </div>
+    )
+  }
+
+  // Enhanced success UI with "Login to FuturoPal" button
+  if (zkLoginStep === 'complete' && showLoginButton && successUserData) {
+    return (
+      <div className="w-full flex flex-col items-center py-8">
+        {/* Success Icon */}
+        <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center mb-4 animate-bounce">
+          <span className="text-white text-3xl">✓</span>
+        </div>
+
+        {/* Success Message */}
+        <h3 className="text-xl font-bold text-gray-800 mb-2">Authentication Successful!</h3>
+        <p className="text-lg text-gray-700 mb-4">Welcome to FuturoPal, {successUserData.name?.split(' ')[0] || 'User'}!</p>
+
+        {/* User Info */}
+        <div className="flex items-center space-x-3 mb-6 p-3 bg-gray-50 rounded-lg">
+          {successUserData.picture ? (
+            <img 
+              src={successUserData.picture} 
+              alt="Profile" 
+              className="w-10 h-10 rounded-full border-2 border-gray-200"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold">{successUserData.name?.charAt(0) || 'U'}</span>
+            </div>
+          )}
+          <div>
+            <p className="font-medium text-gray-800">{successUserData.name}</p>
+            <p className="text-sm text-gray-600">{successUserData.email}</p>
+          </div>
+        </div>
+
+        {/* Login to FuturoPal Button */}
+        <button
+          onClick={handleManualLoginToFuturoPal}
+          disabled={zkLoginStep === 'redirecting'}
+          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-4 px-6 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+        >
+          {zkLoginStep === 'redirecting' ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Taking you to FuturoPal...</span>
+            </>
+          ) : (
+            <>
+              <span>Login to FuturoPal</span>
+              <span className="text-xl">🚀</span>
+            </>
+          )}
+        </button>
+
+        {/* Address Info (for development) */}
+        {process.env.NODE_ENV === 'development' && successUserData.address && (
+          <p className="text-xs text-gray-500 mt-4">
+            Address: {successUserData.address.slice(0, 8)}...{successUserData.address.slice(-8)}
+          </p>
         )}
       </div>
     )

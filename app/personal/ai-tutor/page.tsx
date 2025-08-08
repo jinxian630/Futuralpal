@@ -9,6 +9,7 @@ import { SuggestionChips } from '@/components/SuggestionChip'
 import { TypingIndicator } from '@/components/TypingIndicator'
 import { Accordion, AccordionItem } from '@/components/Accordion'
 import { QuickActionBar, generateSmartQuickActions } from '@/components/QuickActionBar'
+import { useProgress } from '@/lib/hooks/useProgress'
 
 interface StudySession {
   currentQuestion: Question | null
@@ -46,18 +47,34 @@ const AITutorPage = () => {
     }
   ])
 
+  // Use simplified progress hook
+  const { progress, loading, error, addXP } = useProgress('default')
+  
   const [studySession, setStudySession] = useState<StudySession>({
     currentQuestion: null,
     questionsAsked: [],
     studyContext: '',
-    xpPoints: 0,
-    streak: 0,
-    level: 1,
-    achievements: [],
+    xpPoints: progress?.xp || 0,
+    streak: progress?.streak || 0,
+    level: progress?.level || 1,
+    achievements: [], // Convert number to array for compatibility
     conversationHistory: [],
     totalInteractions: 0,
     sessionStartTime: new Date().toISOString()
   })
+
+  // Update studySession when progress loads or changes
+  useEffect(() => {
+    if (progress) {
+      setStudySession(prev => ({
+        ...prev,
+        xpPoints: progress.xp,
+        level: progress.level,
+        streak: progress.streak,
+        achievements: [] // Keep as array for UI compatibility
+      }))
+    }
+  }, [progress])
 
   const [userAnswer, setUserAnswer] = useState('')
   const [showAnswer, setShowAnswer] = useState(false)
@@ -256,31 +273,24 @@ const AITutorPage = () => {
     return newAchievements
   }
 
-  // Add XP and check for achievements
-  const addXP = (points: number, reason: string) => {
-    setStudySession(prev => {
-      const newXP = prev.xpPoints + points
-      const newLevel = calculateLevel(newXP)
-      const newSession = { ...prev, xpPoints: newXP, level: newLevel }
-      
-      const newAchievements = checkAchievements(newSession)
-      if (newAchievements.length > 0) {
-        newSession.achievements = [...prev.achievements, ...newAchievements]
-        
-        // Show celebratory achievement notification
-        setTimeout(() => {
-          const achievementMessage = {
-            role: 'assistant' as const,
-            content: `🎉 **Incredible Achievement Unlocked!** 🎉\n\n${newAchievements.map(a => `🌟 **${a}** - You've earned this!`).join('\n')}\n\n🚀 **+${points} XP** for ${reason}! Your learning journey is truly inspiring!\n\nKeep up this amazing momentum - I'm so proud of your progress! 💫`,
-            type: 'achievement' as const,
-            metadata: { achievements: newAchievements }
-          }
-          setConversation(prev => [...prev, achievementMessage])
-        }, 1000)
-      }
-      
-      return newSession
-    })
+  // Update XP using simplified progress hook
+  const addXPPoints = async (points: number, reason: string) => {
+    console.log(`[Client] Adding XP: +${points} for ${reason}`)
+    
+    if (!progress) return
+    
+    // Use the hook's addXP method for optimistic updates
+    await addXP(points)
+    
+    // Update local study session state for immediate UI feedback
+    const newXP = progress.xp + points
+    const newLevel = Math.floor(newXP / 100) + 1
+    
+    setStudySession(prev => ({
+      ...prev,
+      xpPoints: newXP,
+      level: newLevel
+    }))
   }
 
   useEffect(() => {
@@ -641,7 +651,7 @@ ${result.nextSteps ? `\n🎯 **Next Steps:** ${result.nextSteps}` : ''}`
           xpGain += 5 // Bonus for excellence
         }
         
-        addXP(xpGain, `answering a ${currentDifficulty} question ${feedback.isCorrect ? 'correctly' : ''}`)
+        addXPPoints(xpGain, `answering a ${currentDifficulty} question ${feedback.isCorrect ? 'correctly' : ''}`)
 
         // Update progress
         await aiAgent.updateProgress('answer_question', {
@@ -1667,6 +1677,20 @@ Technical details: ${errorMsg}`,
               </button>
             </div>
           )}
+        </div>
+      </div>
+    )
+  }
+
+  // Show loading state while progress data loads
+  if (loading) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your progress...</p>
+          </div>
         </div>
       </div>
     )

@@ -48,14 +48,17 @@ export const authOptions: NextAuthOptions = {
         hasToken: !!token,
         hasAccount: !!account,
         provider: account?.provider,
-        hasIdToken: !!account?.id_token
+        hasIdToken: !!account?.id_token,
+        existingIdToken: !!token?.idToken
       })
       
-      // Store the JWT token from Google OAuth
+      // Store the JWT token from Google OAuth (only available during initial sign-in)
       if (account && account.id_token) {
         token.idToken = account.id_token
-        console.log('✅ ID Token stored in JWT')
+        console.log('✅ ID Token stored in JWT:', account.id_token?.substring(0, 50) + '...')
       }
+      
+      // Keep existing idToken in token for subsequent requests
       return token
     },
     async session({ session, token }) {
@@ -63,11 +66,18 @@ export const authOptions: NextAuthOptions = {
         hasSession: !!session,
         hasToken: !!token,
         hasIdToken: !!token?.idToken,
-        userEmail: session?.user?.email
+        userEmail: session?.user?.email,
+        idTokenPreview: token?.idToken ? (token.idToken as string).substring(0, 50) + '...' : 'none'
       })
       
       // Pass JWT token to session
-      session.idToken = token.idToken as string
+      if (token?.idToken) {
+        session.idToken = token.idToken as string
+        console.log('✅ ID Token passed to session')
+      } else {
+        console.warn('⚠️ No idToken found in token object')
+      }
+      
       return session
     }
   },

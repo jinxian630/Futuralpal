@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(req: NextRequest, { params }: { params: { address: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ address: string }> }) {
   try {
-    const { address } = params
+    const { address } = await params
     if (!address || typeof address !== 'string') {
       return NextResponse.json({ error: 'Invalid address parameter' }, { status: 400 })
     }

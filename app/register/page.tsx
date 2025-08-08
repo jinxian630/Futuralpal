@@ -38,7 +38,7 @@ const WalletInfo: React.FC = () => {
           if (data.success) {
             // Redirect to dashboard after successful save
             setTimeout(() => {
-              router.push(`/personal/dashboard?address=${account.address}`);
+              router.push('/personal/dashboard');
             }, 2000);
           } else {
             console.error('Save failed:', data.error);
@@ -58,7 +58,7 @@ const WalletInfo: React.FC = () => {
         <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
           <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full"></div>
         </div>
-        <p className="text-white text-lg font-medium">Setting up your account...</p>
+        <p className="text-white text-lg font-medium">Creating your account...</p>
         <p className="text-white/80 text-sm mt-2">Connected to: {account.address.slice(0, 8)}...{account.address.slice(-8)}</p>
       </div>
     );
@@ -70,8 +70,8 @@ const WalletInfo: React.FC = () => {
         <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-white text-2xl">✓</span>
         </div>
-        <p className="text-white text-lg font-medium">Successfully connected!</p>
-        <p className="text-white/80 text-sm mt-2">Redirecting to dashboard...</p>
+        <p className="text-white text-lg font-medium">Account Created Successfully!</p>
+        <p className="text-white/80 text-sm mt-2">Redirecting to your dashboard...</p>
       </div>
     );
   }
@@ -82,6 +82,7 @@ const WalletInfo: React.FC = () => {
 const RegistrationPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [authMethod, setAuthMethod] = useState<'wallet' | 'google' | null>(null);
+  const [signupError, setSignupError] = useState<string | null>(null);
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -95,6 +96,19 @@ const RegistrationPage: React.FC = () => {
 
   // NOTE: Removed auto-redirect for authenticated users to allow account switching
   // Users can now register with different accounts even if they have an existing session
+
+  const handleGoogleSignupSuccess = (address: string) => {
+    console.log('🎉 Google signup successful!', { address })
+    setSignupError(null)
+    
+    // Note: Manual redirect is now handled by the GoogleSignInButton component
+    // No automatic redirect needed here
+  }
+
+  const handleGoogleSignupError = (error: string) => {
+    console.error('❌ Google signup failed:', error)
+    setSignupError(error)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-100">
@@ -250,7 +264,17 @@ const RegistrationPage: React.FC = () => {
                         ← Back
                       </button>
                     </div>
-                    <GoogleSignInButton />
+                    <GoogleSignInButton
+                      onSuccess={handleGoogleSignupSuccess}
+                      onError={handleGoogleSignupError}
+                      disableAutoRedirect={true}
+                      showLoginButton={true}
+                    />
+                    {signupError && (
+                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-red-600 text-sm">{signupError}</p>
+                      </div>
+                    )}
                     <ZkLoginHandler />
                   </div>
                 )}

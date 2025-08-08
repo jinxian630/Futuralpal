@@ -108,11 +108,19 @@ Create engaging, educational flashcards that help students memorize and understa
     
     let errorMessage = 'Failed to generate flashcards'
     let fallbackMessage = "I'm having trouble creating flashcards right now. Here are some manual flashcard tips:\n\n🃏 **DIY Flashcard Tips:**\n• Write key terms on one side, definitions on the other\n• Use your own words for better understanding\n• Include examples and mnemonics\n• Review regularly with spaced repetition\n• Test yourself without looking at answers first\n\n💡 I'll be ready to create custom flashcards when the connection is restored!"
+    let statusCode = 500
     
     if (error instanceof Error) {
       errorMessage = error.message
+      console.error('Detailed error:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
       
-      if (error.message.includes('Rate limit')) {
+      // Handle different types of OpenAI errors
+      if (error.message.includes('Rate limit') || error.message.includes('429')) {
+        statusCode = 429
         fallbackMessage = "I need a moment to prepare your flashcards! 🃏\n\n⏰ **While we wait:**\n• Create your own quick flashcards\n• Write down key terms and concepts\n• Think of memory tricks or mnemonics\n• Review what you want to memorize\n\n🚀 Try asking again in a moment!"
         
         return NextResponse.json({
@@ -120,17 +128,30 @@ Create engaging, educational flashcards that help students memorize and understa
           error: errorMessage,
           fallbackMessage: fallbackMessage,
           metadata: {
+            errorType: 'rate_limit',
             errorOccurred: true,
             errorAt: new Date().toISOString(),
             retryAfter: 10
           }
         }, { 
-          status: 429,
+          status: statusCode,
           headers: { 
             'Retry-After': '10',
             'X-RateLimit-Reset': new Date(Date.now() + 10000).toISOString()
           }
         })
+      }
+
+      // Handle OpenAI API key issues
+      if (error.message.includes('API key') || error.message.includes('Unauthorized') || error.message.includes('401')) {
+        statusCode = 401
+        fallbackMessage = "🔑 **API Configuration Issue**\n\nThere seems to be an issue with the AI service configuration. Please check that the OpenAI API key is properly set up.\n\n🛠️ **For now, you can:**\n• Create flashcards manually\n• Use the other learning features\n• Try again later when the issue is resolved"
+      }
+
+      // Handle network/connection issues
+      if (error.message.includes('network') || error.message.includes('timeout') || error.message.includes('ECONNRESET')) {
+        statusCode = 503
+        fallbackMessage = "🌐 **Connection Issue**\n\nThere seems to be a temporary connection problem with the AI service.\n\n🔄 **Please try:**\n• Refreshing the page\n• Trying again in a few moments\n• Checking your internet connection"
       }
     }
     
@@ -139,9 +160,10 @@ Create engaging, educational flashcards that help students memorize and understa
       error: errorMessage,
       fallbackMessage: fallbackMessage,
       metadata: {
+        errorType: 'general_error',
         errorOccurred: true,
         errorAt: new Date().toISOString()
       }
-    }, { status: 500 })
+    }, { status: statusCode })
   }
 }

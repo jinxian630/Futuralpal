@@ -1,6 +1,9 @@
 // FuturoPal Gamification System
 // Advanced learning motivation and engagement engine
 
+import { Storage } from './storage'
+import { createStorage } from './storage-factory'
+
 export interface UserProgress {
   userId: string
   xpPoints: number
@@ -156,11 +159,17 @@ export const ACHIEVEMENTS: { [key: string]: Omit<Achievement, 'unlockedAt'> } = 
 
 export class GamificationEngine {
   private storageKey = 'futuropal_progress'
+  private storage: Storage
 
-  // Load user progress from localStorage
+  constructor(storage?: Storage) {
+    // Use provided storage or create one automatically based on environment
+    this.storage = storage || createStorage()
+  }
+
+  // Load user progress from storage
   loadProgress(userId: string = 'default'): UserProgress {
     try {
-      const stored = localStorage.getItem(`${this.storageKey}_${userId}`)
+      const stored = this.storage.getItem(`${this.storageKey}_${userId}`)
       if (stored) {
         const progress = JSON.parse(stored)
         // Ensure all required fields exist
@@ -178,7 +187,7 @@ export class GamificationEngine {
         }
       }
     } catch (error) {
-      console.warn('Failed to load progress from localStorage:', error)
+      console.warn('Failed to load progress from storage:', error)
     }
 
     // Return default progress
@@ -195,13 +204,13 @@ export class GamificationEngine {
     }
   }
 
-  // Save user progress to localStorage
+  // Save user progress to storage
   saveProgress(progress: UserProgress): boolean {
     try {
-      localStorage.setItem(`${this.storageKey}_${progress.userId}`, JSON.stringify(progress))
+      this.storage.setItem(`${this.storageKey}_${progress.userId}`, JSON.stringify(progress))
       return true
     } catch (error) {
-      console.warn('Failed to save progress to localStorage:', error)
+      console.warn('Failed to save progress to storage:', error)
       return false
     }
   }
