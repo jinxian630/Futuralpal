@@ -1,11 +1,11 @@
 {
-  "/personal/api/update-progress/route": "app/personal/api/update-progress/route.js",
+  "/api/bot/effort-score/route": "app/api/bot/effort-score/route.js",
   "/personal/api/user-progress/route": "app/personal/api/user-progress/route.js",
-  "/personal/api/generate-flashcards/route": "app/personal/api/generate-flashcards/route.js",
-  "/personal/api/tutor-chat/route": "app/personal/api/tutor-chat/route.js",
+  "/api/tutor/students-at-risk/route": "app/api/tutor/students-at-risk/route.js",
   "/personal/dashboard/page": "app/personal/dashboard/page.js",
-  "/personal/ai-tutor/page": "app/personal/ai-tutor/page.js",
-  "/personal/digital-room/page": "app/personal/digital-room/page.js",
+  "/personal/marketplace/page": "app/personal/marketplace/page.js",
+  "/personal/profile/page": "app/personal/profile/page.js",
   "/personal/tutor/page": "app/personal/tutor/page.js",
-  "/personal/profile/page": "app/personal/profile/page.js"
+  "/personal/courses/page": "app/personal/courses/page.js",
+  "/personal/digital-room/page": "app/personal/digital-room/page.js"
 }

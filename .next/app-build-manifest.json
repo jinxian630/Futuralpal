@@ -1,31 +1,26 @@
 {
   "pages": {
+    "/api/auth/[...nextauth]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/[...nextauth]/route.js"
+    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
-    "/api/auth/me/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/auth/me/route.js"
-    ],
-    "/api/auth/[...nextauth]/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/auth/[...nextauth]/route.js"
-    ],
     "/register/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/register/page.css",
       "static/chunks/app/register/page.js"
+    ],
+    "/api/auth/me/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/me/route.js"
     ],
     "/api/zklogin/route": [
       "static/chunks/webpack.js",
@@ -52,6 +47,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/personal/dashboard/page.js"
     ],
+    "/api/ai/chat/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/ai/chat/route.js"
+    ],
     "/personal/ai-tutor/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -72,35 +72,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/personal/api/tutor-chat/route.js"
     ],
+    "/personal/api/generate-question/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/api/generate-question/route.js"
+    ],
+    "/personal/api/check-answer/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/api/check-answer/route.js"
+    ],
     "/personal/api/generate-flashcards/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/personal/api/generate-flashcards/route.js"
     ],
-    "/personal/tutor/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/tutor/page.js"
-    ],
-    "/api/tutor/students-at-risk/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/tutor/students-at-risk/route.js"
-    ],
-    "/api/demo/seed-data/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/demo/seed-data/route.js"
-    ],
     "/personal/marketplace/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/personal/marketplace/page.js"
-    ],
-    "/api/ai/chat/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/ai/chat/route.js"
     ],
     "/personal/digital-room/page": [
       "static/chunks/webpack.js",
@@ -116,6 +106,16 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/bot/effort-score/route.js"
+    ],
+    "/personal/tutor/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/tutor/page.js"
+    ],
+    "/api/tutor/students-at-risk/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/tutor/students-at-risk/route.js"
     ],
     "/personal/profile/page": [
       "static/chunks/webpack.js",
