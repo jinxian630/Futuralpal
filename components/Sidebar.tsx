@@ -2,6 +2,7 @@
 
 
 import { useSearchParams } from 'next/navigation';
+import header_logo from "@/app/personal/Picture/header_logo.jpg";
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -55,10 +56,12 @@ const Sidebar = () => {
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
-                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                  <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
-                </div>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                <img 
+                      src={header_logo.src} 
+                      alt="Logo" 
+                      className="rounded-[10px]" 
+                 />
               </div>
               <div>
                 <h1 className="text-xl font-bold">FuturoPal</h1>
@@ -135,4 +138,4 @@ const Sidebar = () => {
   )
 }
 
-export default Sidebar 
+export default Sidebar

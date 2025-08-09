@@ -27,10 +27,18 @@ const TutorPage = () => {
     { label: 'Average Rating', value: '4.8', icon: Star, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
   ]
 
-  const courses = [
+  var courses = [
     {
       id: 1,
       title: 'Advanced UI/UX Design',
+      description: 'Learn advanced techniques in UI/UX design, including user research, prototyping, and usability testing.',
+      category: 'design',
+      difficulty: 'advanced',
+      duration: '10 hours',
+      materials: [
+        { type: 'video', name: 'Introduction to UI/UX' },
+        { type: 'document', name: 'UI/UX Best Practices' }
+      ],
       students: 432,
       earnings: '$1,296',
       rating: 4.9,
@@ -42,6 +50,14 @@ const TutorPage = () => {
     {
       id: 2,
       title: 'JavaScript Mastery',
+      description: 'Master JavaScript with this comprehensive course covering ES6, asynchronous programming, and modern frameworks.',
+      category: 'programming',
+      difficulty: 'intermediate',
+      duration: '15 hours',
+      materials: [
+        { type: 'video', name: 'JavaScript Basics' },
+        { type: 'document', name: 'ES6 Features' }
+      ],
       students: 687,
       earnings: '$2,061',
       rating: 4.8,
@@ -53,6 +69,14 @@ const TutorPage = () => {
     {
       id: 3,
       title: 'Digital Photography Basics',
+      description: 'A beginner-friendly course on digital photography, covering camera settings, composition, and editing techniques.',
+      category: 'design',
+      difficulty: 'beginner',
+      duration: '8 hours',
+      materials: [
+        { type: 'video', name: 'Camera Settings' },
+        { type: 'document', name: 'Composition Tips' }
+      ],
       students: 128,
       earnings: '$384',
       rating: 4.7,
@@ -64,6 +88,14 @@ const TutorPage = () => {
     {
       id: 4,
       title: 'React Development Course',
+      description: 'Build dynamic web applications using React. Learn about components, state management, and hooks.',
+      category: 'programming',
+      difficulty: 'intermediate',
+      duration: '12 hours',
+      materials: [
+        { type: 'video', name: 'React Components' },
+        { type: 'document', name: 'State Management with Redux' }
+      ],
       students: 0,
       earnings: '$0',
       rating: 0,
@@ -74,6 +106,20 @@ const TutorPage = () => {
     }
   ]
 
+  const [showEditModal, setShowEditModal] = useState<null | typeof courses[0]>(null);
+  const [editForm, setEditForm] = useState({
+    title: courses.title,
+    description: '',
+    category: 'design',
+    difficulty: 'beginner',
+    duration: '',
+    price: ''
+  })
+
+  const [viewingCourse, setViewingCourse] = useState<null | typeof courses[0]>(null);
+
+
+
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Handle course upload logic here
@@ -82,6 +128,22 @@ const TutorPage = () => {
     // Reset form
     setUploadForm({
       title: '',
+      description: '',
+      category: 'design',
+      difficulty: 'beginner',
+      duration: '',
+      price: ''
+    })
+  }
+
+    const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle course upload logic here
+    console.log('Edit form data:', editForm)
+    setShowEditModal(false)
+    // Reset form
+    setEditForm({
+      title: e.title,
       description: '',
       category: 'design',
       difficulty: 'beginner',
@@ -163,11 +225,17 @@ const TutorPage = () => {
                   <Upload size={24} className="mx-auto mb-2 text-blue-500" />
                   <p className="font-medium text-blue-600">Upload New Course</p>
                 </button>
-                <button className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-center">
-                  <BarChart3 size={24} className="mx-auto mb-2 text-gray-600" />
-                  <p className="font-medium text-gray-700">View Analytics</p>
+                <button 
+                  onClick={() => setActiveTab('analytics')}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-center"
+                  >
+                    <BarChart3 size={24} className="mx-auto mb-2 text-gray-600" />
+                    <p className="font-medium text-gray-700">View Analytics</p>
                 </button>
-                <button className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-center">
+                <button 
+                  onClick={() => setActiveTab('earnings')}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-center"
+                >
                   <DollarSign size={24} className="mx-auto mb-2 text-gray-600" />
                   <p className="font-medium text-gray-700">Check Earnings</p>
                 </button>
@@ -238,6 +306,7 @@ const TutorPage = () => {
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         aria-label="View course details"
                         title="View course details"
+                        onClick={() => setViewingCourse(course)} // Add this
                       >
                         <Eye size={20} />
                       </button>
@@ -245,6 +314,8 @@ const TutorPage = () => {
                         className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                         aria-label="Edit course"
                         title="Edit course"
+                        onClick={() => setShowEditModal(course)} // Add this
+
                       >
                         <Edit3 size={20} />
                       </button>
@@ -301,14 +372,27 @@ const TutorPage = () => {
             </div>
 
             <form onSubmit={handleUploadSubmit} className="p-6 space-y-6">
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Create Game Link</label>
+                <input
+                  type="text"
+                  // value={uploadForm.title}
+                  onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value="https://app.genially.com/teams/6896ac9f0608d33fb783b038/spaces/6896ac9f0608d33fb783b04a/templates/games-and-challenges?subcategory=games-and-challenges-escape-breakouts"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Game Link</label>
                 <input
                   type="text"
                   value={uploadForm.title}
                   onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter course title..."
+                  placeholder="Enter game link..."
                   required
                 />
               </div>
@@ -383,6 +467,144 @@ const TutorPage = () => {
                 </div>
               </div>
 
+              {/* <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Course Materials</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <div className="flex items-center justify-center space-x-4 mb-4">
+                    <FileText size={24} className="text-gray-400" />
+                    <Video size={24} className="text-gray-400" />
+                    <Image size={24} className="text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 mb-2">Drag and drop your course materials here</p>
+                  <p className="text-sm text-gray-500">Supports PDFs, videos, images, and documents</p>
+                  <button
+                    type="button"
+                    className="mt-4 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Choose Files
+                  </button>
+                </div>
+              </div> */}
+
+              <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Upload Game
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">Edit Course</h2>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Game Link</label>
+                <input
+                  type="text"
+                  value={uploadForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter game link..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={4}
+                  placeholder="Describe your course..."
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <select
+                    id="category"
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="design">Design</option>
+                    <option value="programming">Programming</option>
+                    <option value="business">Business</option>
+                    <option value="language">Language</option>
+                    <option value="science">Science</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                  <select
+                    id="difficulty"
+                    value={editForm.difficulty}
+                    onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                  <input
+                    type="text"
+                    value={editForm.duration}
+                    onChange={(e) => setEditForm({ ...editForm, duration: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., 8 hours"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Price (NFT Points)</label>
+                  <input
+                    type="number"
+                    value={editForm.price}
+                    onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="25"
+                    required
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Course Materials</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -405,7 +627,7 @@ const TutorPage = () => {
               <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => setShowUploadModal(false)}
+                  onClick={() => setShowEditModal(false)}
                   className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
@@ -414,13 +636,149 @@ const TutorPage = () => {
                   type="submit"
                   className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
-                  Upload Course
+                  Confirm Edit
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Course Details Modal */}
+      {viewingCourse && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">Course Details</h2>
+                <button
+                  onClick={() => setViewingCourse(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Course Header */}
+              <div className="flex items-start space-x-6">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-3xl">
+                  {viewingCourse.icon}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900">{viewingCourse.title}</h3>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 ${
+                    viewingCourse.status === 'published' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {viewingCourse.status === 'published' ? 'Published' : 'Draft'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Course Metadata Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Description</h4>
+                    <p className="text-gray-700 whitespace-pre-line">
+                      {viewingCourse.description || "No description provided"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Course Materials</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {viewingCourse.materials?.length > 0 ? (
+                        viewingCourse.materials.map((material, index) => (
+                          <span 
+                            key={index}
+                            className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm"
+                          >
+                            {material.type === 'video' && <Video size={14} className="mr-1" />}
+                            {material.type === 'document' && <FileText size={14} className="mr-1" />}
+                            {material.name}
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-gray-500">No materials uploaded</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Category</h4>
+                      <p className="capitalize text-gray-700">
+                        {viewingCourse.category}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Difficulty</h4>
+                      <p className="capitalize text-gray-700">
+                        {viewingCourse.difficulty}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Duration</h4>
+                      <p className="text-gray-700">
+                        {viewingCourse.duration || "Not specified"}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Price</h4>
+                      <p className="text-lg font-semibold">
+                        ${viewingCourse.price} NFT Points
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Statistics</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center space-x-2 text-gray-700">
+                        <Users size={16} />
+                        <span>{viewingCourse.students} students</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-gray-700">
+                        <Star size={16} className="text-yellow-400 fill-current" />
+                        <span>{viewingCourse.rating || 'No ratings'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-6 border-t border-gray-200 flex justify-end space-x-4">
+                <button
+                  onClick={() => setViewingCourse(null)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setViewingCourse(null);
+                    setActiveTab('analytics');
+                  }}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  View Analytics
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

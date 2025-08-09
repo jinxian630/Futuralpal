@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Upload, Brain, BarChart3, DollarSign, Home, ShoppingBag, Palette } from 'lucide-react';
+import header_logo from "@/app/personal/Picture/header_logo.jpg";
+import logo from "@/app/personal/Picture/logo.png";
 
 const FuturopalWebsite = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,8 +34,12 @@ const FuturopalWebsite = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                <img 
+                      src={header_logo.src} 
+                      alt="Logo" 
+                      className="rounded-[10px]" 
+                 />
               </div>
               <span className="font-bold text-slate-800 text-lg">FUTUROPAL</span>
             </div>
@@ -49,6 +55,9 @@ const FuturopalWebsite = () => {
               <button onClick={() => scrollToSection('digital-room')} className="text-slate-700 hover:text-blue-600 font-medium transition-colors">
                 Digital Room
               </button>
+              <Link href="personal/dashboard" className="text-slate-700 hover:text-blue-600 font-medium transition-colors">
+                Login
+              </Link>
             </div>
 
             {/* Auth Buttons */}
@@ -84,15 +93,25 @@ const FuturopalWebsite = () => {
                 FuturoPal transforms your notes into simple, personalized lessons designed to help you learn faster and smarter. Take adaptive quizzes to test your understanding, earn NFT points as you progress, and unlock items to customize your own digital room.
               </p>
               <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-full font-semibold hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
-                Get Started
+                <Link href="register">
+                  Get Started
+                </Link>
               </button>
             </div>
 
             {/* Robot Animation */}
             <div className="flex justify-center">
               <div className="relative">
-                <div className="w-80 h-80 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center shadow-2xl animate-bounce">
-                  <div className="text-8xl">🤖</div>
+                <div className="  w-80 h-80 bg-gradient-to-br from-yellow-300/40 to-orange-600/40 80% opacity rounded-3xl flex items-center justify-center shadow-2xl animate-bounce border border-orange-200/20">
+                  <div className="text-8xl">
+                    <img 
+                      src={logo.src} 
+                      alt="Logo" 
+                      className="rounded-[10px]" 
+                      width="500" 
+                      height="300"
+                    />
+                  </div>
                 </div>
                 <div className="absolute -top-4 -right-4 w-8 h-8 bg-yellow-400 rounded-full animate-ping"></div>
                 <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-pink-400 rounded-full animate-pulse"></div>
@@ -113,22 +132,22 @@ const FuturopalWebsite = () => {
               {
                 icon: <Upload className="w-8 h-8" />,
                 title: "Upload Your Notes",
-                description: "Upload any notes or documents. AI reads and breaks them down for you."
+                description: "Too many notes, too little time? Let AI summarize for you. Accuracy you can trust."
               },
               {
                 icon: <Brain className="w-8 h-8" />,
                 title: "Learn Smarter, Quiz Smarter",
-                description: "FuturoPal turns the notes into bite-sized lessons and quizzes. Progress from easy to hard – level up when you get it right in a row!"
+                description: "Best learners never go solo, quizzes show your growth. Ready to test your knowledge in the quizzes?"
               },
               {
                 icon: <BarChart3 className="w-8 h-8" />,
                 title: "Track Progress Store Certificates",
-                description: "Your learning journey is saved. You can view your past topics, track performance, and store certificates – all in one place."
+                description: "Your Track your progress，record your journey. Every step is a story of victory."
               },
               {
                 icon: <DollarSign className="w-8 h-8" />,
                 title: "Earn NFT Points",
-                description: "With every quiz you complete, earn NFT points. Use them to personalize your experience!"
+                description: "Gain knowledge. Get rewarded. Learn to Earn. Earn and Learn."
               }
             ].map((service, index) => (
               <div key={index} className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-slate-100">
@@ -213,19 +232,21 @@ const FuturopalWebsite = () => {
 
             {/* Phone Mockup */}
             <div className="flex justify-center">
-              <div className="relative">
-                <div className="w-80 h-96 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-6 shadow-2xl">
-                  <div className="w-full h-full bg-white rounded-2xl flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-6xl mb-4">🏠</div>
-                      <div className="text-slate-600 font-medium">Build Your Dream Space</div>
-                      <div className="text-sm text-slate-400 mt-2">Share it and collab with your friends</div>
+              <Link href="register">
+                <div className="relativerelative transition-transform duration-300 hover:scale-105">
+                  <div className="w-80 h-96 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-6 shadow-2xl">
+                    <div className="w-full h-full bg-white rounded-2xl flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-6xl mb-4">🏠</div>
+                        <div className="text-slate-600 font-medium">Build Your Dream Space</div>
+                        <div className="text-sm text-slate-400 mt-2">Share it and collab with your friends</div>
+                      </div>
                     </div>
                   </div>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-400 rounded-full animate-pulse"></div>
+                  <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-blue-400 rounded-full animate-bounce"></div>
                 </div>
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-400 rounded-full animate-pulse"></div>
-                <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-blue-400 rounded-full animate-bounce"></div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>

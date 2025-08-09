@@ -22,7 +22,7 @@ interface StockImages {
 
 
 // CosmicRoomLayout component
-const CosmicRoomLayout = () => {
+const MyLab = () => {
   const [draggedItem, setDraggedItem] = useState<DraggableItem | null>(null);
   const [droppedItems, setDroppedItems] = useState<DraggableItem[]>([]);
   const [isLeaderboardVisible, setIsLeaderboardVisible] = useState(false);
@@ -347,4 +347,4 @@ const handleDrop = (e: React.DragEvent) => {
   );
 };
 
-export default CosmicRoomLayout;
+export default MyLab;

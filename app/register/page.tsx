@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import header_logo from "@/app/personal/Picture/header_logo.jpg";
 import { 
   WalletProvider, 
   ConnectButton, 
@@ -120,8 +121,12 @@ const RegistrationPage: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                <img 
+                      src={header_logo.src} 
+                      alt="Logo" 
+                      className="rounded-[10px]" 
+                 />
               </div>
               <span className="font-bold text-slate-800 text-lg">FUTUROPAL</span>
             </Link>

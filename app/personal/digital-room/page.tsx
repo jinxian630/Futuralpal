@@ -357,7 +357,14 @@
 
 import { useState, useRef } from 'react'
 import { Users, MessageSquare, Trophy, Target, Clock, BookOpen, Folder, Tag, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star } from 'lucide-react'
-import CosmicRoomLayout from './CosmicRoomLayout';
+import DoorImage from './door.png' // adjust filename to match yours
+import ResearchGroupRoom from './ReseachGroupRoom';
+import LabGroup from './LabGroup';
+import ConnectGroup from './ConnectGroupRoom';
+
+
+
+
 
 interface DraggableItem {
   id: number
@@ -391,7 +398,10 @@ const DigitalRoomPage = () => {
         <nav className="flex space-x-8">
           {[
             { id: 'overview', label: 'Overview', icon: Users },
-            { id: 'groups', label: 'Study Groups', icon: MessageSquare },
+            { id: 'research', label: 'Research Groups', icon: MessageSquare },
+            { id: 'connect', label: 'Connect Groups', icon: MessageSquare },
+            { id: 'lab', label: 'Lab Groups', icon: MessageSquare },          
+                    
           ].map(tab => {
             const Icon = tab.icon
             return (
@@ -413,8 +423,10 @@ const DigitalRoomPage = () => {
       </div>
 
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="">
+          {/* First column */}
           <div className="lg:col-span-1 space-y-6">
+          {/* Your Progress
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Your Progress</h3>
               <div className="space-y-4">
@@ -442,7 +454,8 @@ const DigitalRoomPage = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            {/* Study Streak */}
+            {/* <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Study Streak</h3>
               <div className="text-center">
                 <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -451,12 +464,58 @@ const DigitalRoomPage = () => {
                 <p className="text-3xl font-bold text-gray-900">7 Days</p>
                 <p className="text-sm text-gray-600">Keep it up!</p>
               </div>
+            </div> */}
+            <div className="bg-white rounded-lg shadow-lg p-6 flex gap-6">
+              {/* Door 1 — Study group */}
+              <div
+                className="flex-1 cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => setActiveTab('research')}
+              >
+                <img
+                  src={DoorImage.src}
+                  alt="Door"
+                  className="w-full rounded-lg mb-4"
+                />
+                <div className="text-center">
+                  <span className="block text-gray-600">Research group</span>
+                </div>
+              </div>
+
+              {/* Door 2 */}
+              <div className="flex-1">
+                <div
+                  className="flex-1 cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => setActiveTab('connect')}
+                >
+                  <img src={DoorImage.src} alt="Door" className="w-full rounded-lg mb-4" />
+                  <div className="text-center">
+                    <span className="block text-gray-600">Connect group</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Door 3 */}
+              <div className="flex-1">
+                <div
+                  className="flex-1 cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => setActiveTab('lab')}
+                >
+                  <img src={DoorImage.src} alt="Door" className="w-full rounded-lg mb-4" />
+                  <div className="text-center">
+                    <span className="block text-gray-600">Lab group</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+
       )}
 
-      {activeTab === 'groups' && <CosmicRoomLayout />}
+      {activeTab === 'research' && <ResearchGroupRoom />}
+      {activeTab === 'connect' && <ConnectGroup />}
+      {activeTab === 'lab' && <LabGroup />}
     </div>
   )
 }

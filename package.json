@@ -17,8 +17,6 @@
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^24.0.13",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
     "autoprefixer": "^10.4.0",
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",
@@ -54,6 +52,8 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/pdf-parse": "^1.1.5"
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7"
   }
 }
