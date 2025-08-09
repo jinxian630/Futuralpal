@@ -5,10 +5,13 @@ import { useState } from 'react'
 import { Search, Filter, BookOpen, Clock, Star, Users, TrendingUp, CheckCircle, Play, Award } from 'lucide-react'
 import StatsCard from '@/components/StatsCard'
 import CourseCard from '@/components/CourseCard'
+import ModularBot, { BOT_PERSONALITIES } from '@/components/ModularBot'
+import { useUser } from '@/lib/hooks/useUser'
 
 const CoursesPage = () => {
   const searchParams = useSearchParams();
   const walletAddress = searchParams.get('address');
+  const { user, isAuthenticated } = useUser()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -233,6 +236,34 @@ const CoursesPage = () => {
           </div>
         )}
       </div>
+
+      {/* Course Bot for demo course */}
+      {isAuthenticated && user && (
+        <ModularBot
+          module="course:demo-course-1"
+          userId={user.oidcSub}
+          personality={BOT_PERSONALITIES.course}
+          quickActions={[
+            {
+              id: 'view-assignments',
+              label: '📝 View Assignments',
+              action: () => alert('View assignments for this course')
+            },
+            {
+              id: 'check-progress',
+              label: '📊 Check Progress', 
+              action: () => alert('Your progress: 25% complete')
+            },
+            {
+              id: 'study-tips',
+              label: '💡 Study Tips',
+              action: () => alert('Here are some study tips for web development!')
+            }
+          ]}
+          variant="floating"
+          position="bottom-right"
+        />
+      )}
     </div>
   )
 }

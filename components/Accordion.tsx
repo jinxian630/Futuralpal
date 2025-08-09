@@ -43,7 +43,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
               ? 'bg-blue-50 hover:bg-blue-100 border-l-2 border-blue-500'
               : 'bg-white hover:bg-gray-50'
         }`}
-        aria-expanded={isOpen}
+        aria-expanded={isOpen.toString()}
         aria-controls={`accordion-content-${id}`}
       >
         <div className="flex items-center space-x-2 min-w-0 flex-1">

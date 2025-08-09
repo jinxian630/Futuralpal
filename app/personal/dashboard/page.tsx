@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Search, Bell, ChevronLeft, ChevronRight, Clock, Users, Award, BookOpen, TrendingUp, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import StatsCard from '@/components/StatsCard'
@@ -8,6 +8,7 @@ import CourseCard from '@/components/CourseCard'
 import ProgressChart from '@/components/ProgressChart'
 import WelcomeSection from '@/components/WelcomeSection'
 import OnboardingModal from '@/components/OnboardingModal'
+import ModularBot, { BOT_PERSONALITIES, ModularBotRef } from '@/components/ModularBot'
 import { useUser } from '@/lib/hooks/useUser'
 import { generateAvatarFromAddress } from '@/lib/utils/wallet'
 
@@ -17,6 +18,7 @@ const Dashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [showOnboarding, setShowOnboarding] = useState(false)
   const { user, isAuthenticated, loginWithAddress, logout, isLoading } = useUser()
+  const botRef = useRef<ModularBotRef>(null)
 
   // Add debugging for user data
   useEffect(() => {
@@ -131,6 +133,21 @@ const Dashboard = () => {
   ]
 
   const courseFilters = ['All Courses', 'The Newest', 'Top Rated', 'Most Popular']
+
+  // Handle quick action button clicks to trigger chatbot conversations
+  const handleQuickAction = (actionType: string) => {
+    const actionMessages: Record<string, string> = {
+      'continue-learning': "I'd like to continue my learning journey. What courses should I focus on next?",
+      'ai-tutor': "Tell me about the AI Tutor feature and how it can help me learn better.",
+      'marketplace': "I want to browse new courses. Can you recommend some courses based on my interests?",
+      'study-tips': "Can you give me some effective study tips and techniques to improve my learning?"
+    }
+
+    const message = actionMessages[actionType]
+    if (message && botRef.current?.sendMessage) {
+      botRef.current.sendMessage(message)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -299,11 +316,46 @@ const Dashboard = () => {
         </div>
       </div>
 
+
       {/* Onboarding Modal */}
       <OnboardingModal 
         isOpen={showOnboarding}
         onClose={() => setShowOnboarding(false)}
       />
+
+      {/* Dashboard Bot */}
+      {isAuthenticated && user && (
+        <ModularBot
+          ref={botRef}
+          module="dashboard"
+          userId={user.oidcSub}
+          personality={BOT_PERSONALITIES.dashboard}
+          quickActions={[
+            {
+              id: 'continue-learning',
+              label: '📚 Continue Learning',
+              action: () => handleQuickAction('continue-learning')
+            },
+            {
+              id: 'ai-tutor',
+              label: '🤖 AI Tutor',
+              action: () => handleQuickAction('ai-tutor')
+            },
+            {
+              id: 'browse-courses',
+              label: '🛒 Browse Courses',
+              action: () => handleQuickAction('marketplace')
+            },
+            {
+              id: 'study-tips',
+              label: '💡 Study Tips',
+              action: () => handleQuickAction('study-tips')
+            }
+          ]}
+          variant="floating"
+          position="bottom-right"
+        />
+      )}
     </div>
   )
 }

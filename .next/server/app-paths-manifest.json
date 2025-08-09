@@ -1,11 +1,11 @@
 {
-  "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/auth/zklogin-verify/route": "app/api/auth/zklogin-verify/route.js",
-  "/api/zklogin/route": "app/api/zklogin/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/auth/oidc-verify/route": "app/api/auth/oidc-verify/route.js",
-  "/register/page": "app/register/page.js",
-  "/page": "app/page.js",
+  "/personal/api/update-progress/route": "app/personal/api/update-progress/route.js",
+  "/personal/api/user-progress/route": "app/personal/api/user-progress/route.js",
+  "/personal/api/generate-flashcards/route": "app/personal/api/generate-flashcards/route.js",
+  "/personal/api/tutor-chat/route": "app/personal/api/tutor-chat/route.js",
   "/personal/dashboard/page": "app/personal/dashboard/page.js",
-  "/personal/ai-tutor/page": "app/personal/ai-tutor/page.js"
+  "/personal/ai-tutor/page": "app/personal/ai-tutor/page.js",
+  "/personal/digital-room/page": "app/personal/digital-room/page.js",
+  "/personal/tutor/page": "app/personal/tutor/page.js",
+  "/personal/profile/page": "app/personal/profile/page.js"
 }

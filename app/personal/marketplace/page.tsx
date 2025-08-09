@@ -2,11 +2,20 @@
 
 import { useState } from 'react'
 import { ShoppingCart, Star, Filter, Search, Coins, Crown, Gift } from 'lucide-react'
+import { useProgress } from '@/lib/hooks/useProgress'
+import ModularBot, { BOT_PERSONALITIES } from '@/components/ModularBot'
+import { useUser } from '@/lib/hooks/useUser'
 
 const MarketplacePage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [nftPoints, setNftPoints] = useState(111)
+  
+  // Use progress hook to get real XP data
+  const { progress, loading, error, addXP } = useProgress('default')
+  const nftPoints = progress?.xp || 0
+  
+  // Get user data for bot
+  const { user, isAuthenticated } = useUser()
 
   const categories = [
     { id: 'all', label: 'All Courses', count: 50 },
@@ -109,10 +118,10 @@ const MarketplacePage = () => {
     (searchQuery === '' || course.title.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
-  const handlePurchase = (courseId: number, price: number) => {
+  const handlePurchase = async (courseId: number, price: number) => {
     if (nftPoints >= price) {
-      setNftPoints(prev => prev - price)
-      // Add purchase logic here
+      // Deduct XP points for purchase
+      await addXP(-price)
       alert('Course purchased successfully!')
     } else {
       alert('Insufficient NFT points!')
@@ -271,6 +280,34 @@ const MarketplacePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Marketplace Bot */}
+      {isAuthenticated && user && (
+        <ModularBot
+          module="marketplace"
+          userId={user.oidcSub}
+          personality={BOT_PERSONALITIES.marketplace}
+          quickActions={[
+            {
+              id: 'browse-by-budget',
+              label: `💰 Courses Under ${Math.floor(nftPoints/2)} Points`,
+              action: () => alert(`Here are courses you can afford with your ${nftPoints} NFT points!`)
+            },
+            {
+              id: 'popular-courses',
+              label: '🔥 Popular Courses',
+              action: () => setSelectedCategory('programming') // Show most popular category
+            },
+            {
+              id: 'earn-more-points',
+              label: '⭐ How to Earn Points',
+              action: () => alert('Complete lessons and quizzes in the AI Tutor to earn more NFT points!')
+            }
+          ]}
+          variant="floating"
+          position="bottom-right"
+        />
+      )}
     </div>
   )
 }

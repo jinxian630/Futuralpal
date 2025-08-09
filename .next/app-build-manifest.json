@@ -66,6 +66,61 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/personal/api/update-progress/route.js"
+    ],
+    "/personal/api/tutor-chat/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/api/tutor-chat/route.js"
+    ],
+    "/personal/api/generate-flashcards/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/api/generate-flashcards/route.js"
+    ],
+    "/personal/tutor/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/tutor/page.js"
+    ],
+    "/api/tutor/students-at-risk/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/tutor/students-at-risk/route.js"
+    ],
+    "/api/demo/seed-data/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/demo/seed-data/route.js"
+    ],
+    "/personal/marketplace/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/marketplace/page.js"
+    ],
+    "/api/ai/chat/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/ai/chat/route.js"
+    ],
+    "/personal/digital-room/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/digital-room/page.js"
+    ],
+    "/personal/courses/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/courses/page.js"
+    ],
+    "/api/bot/effort-score/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/bot/effort-score/route.js"
+    ],
+    "/personal/profile/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/personal/profile/page.js"
     ]
   }
 }

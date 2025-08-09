@@ -1746,7 +1746,7 @@ Technical details: ${errorMsg}`,
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden relative">
                 <div 
-                  className="bg-gradient-to-r from-purple-500 via-blue-500 to-teal-400 h-3 rounded-full transition-all duration-700 ease-out relative"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 h-3 rounded-full transition-all duration-700 ease-out relative"
                   style={{ 
                     width: `${((studySession.xpPoints % 100) / 100) * 100}%`,
                     minWidth: '2px' 
@@ -1984,7 +1984,7 @@ Technical details: ${errorMsg}`,
             {/* Compact Progress Bar */}
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full transition-all duration-500"
                 style={{ 
                   width: `${((studySession.xpPoints % 100) / 100) * 100}%`,
                   minWidth: '2px'

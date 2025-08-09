@@ -89,45 +89,7 @@ export function InteractiveFlashcard({ cards, onComplete }: InteractiveFlashcard
     }
   }, [viewedCards.size, cards.length, onComplete])
 
-  // Keyboard navigation
-  const handleKeyPress = useCallback((event: KeyboardEvent) => {
-    if (isAnimating) return
-    
-    switch (event.code) {
-      case 'Space':
-      case 'Enter':
-        event.preventDefault()
-        handleFlip()
-        break
-      case 'ArrowLeft':
-        event.preventDefault()
-        if (cards.length > 1) handlePrevious()
-        break
-      case 'ArrowRight':
-        event.preventDefault()
-        if (cards.length > 1) handleNext()
-        break
-      case 'KeyS':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault()
-          handleShuffle()
-        }
-        break
-      case 'KeyR':
-        if (event.ctrlKey || event.metaKey) {
-          event.preventDefault()
-          handleReset()
-        }
-        break
-    }
-  }, [isAnimating, cards.length])
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress)
-    return () => {
-      document.removeEventListener('keydown', handleKeyPress)
-    }
-  }, [handleKeyPress])
 
   if (!cards || cards.length === 0) {
     return (
@@ -209,12 +171,6 @@ export function InteractiveFlashcard({ cards, onComplete }: InteractiveFlashcard
       <div className="relative h-80 perspective-1000" role="region" aria-label="Flashcard Content">
         <div
           onClick={handleFlip}
-          onKeyDown={(e) => {
-            if (e.code === 'Space' || e.code === 'Enter') {
-              e.preventDefault()
-              handleFlip()
-            }
-          }}
           className={`relative w-full h-full cursor-pointer transition-all duration-600 preserve-3d ${
             flipped ? 'rotate-y-180' : ''
           } ${isAnimating ? 'scale-95 opacity-75' : 'scale-100 opacity-100'}`}
@@ -310,7 +266,7 @@ export function InteractiveFlashcard({ cards, onComplete }: InteractiveFlashcard
             onClick={handlePrevious}
             disabled={cards.length <= 1 || isAnimating}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg hover:from-gray-200 hover:to-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            aria-label={`Go to previous card. Currently on card ${currentIndex + 1} of ${cards.length}. Use left arrow key as shortcut.`}
+            aria-label={`Go to previous card. Currently on card ${currentIndex + 1} of ${cards.length}.`}
           >
             <ChevronLeft size={16} aria-hidden="true" />
             <span className="hidden sm:inline">Previous</span>
@@ -320,7 +276,7 @@ export function InteractiveFlashcard({ cards, onComplete }: InteractiveFlashcard
             onClick={handleNext}
             disabled={cards.length <= 1 || isAnimating}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg hover:from-gray-200 hover:to-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            aria-label={`Go to next card. Currently on card ${currentIndex + 1} of ${cards.length}. Use right arrow key as shortcut.`}
+            aria-label={`Go to next card. Currently on card ${currentIndex + 1} of ${cards.length}.`}
           >
             <span className="hidden sm:inline">Next</span>
             <ChevronRight size={16} aria-hidden="true" />
@@ -332,7 +288,7 @@ export function InteractiveFlashcard({ cards, onComplete }: InteractiveFlashcard
             onClick={handleShuffle}
             disabled={isAnimating}
             className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 rounded-lg hover:from-purple-200 hover:to-purple-300 transition-all transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-            aria-label="Shuffle cards for random practice. Use Ctrl+S as shortcut."
+            aria-label="Shuffle cards for random practice."
           >
             <Shuffle size={16} aria-hidden="true" />
             <span className="hidden sm:inline">Shuffle</span>
@@ -342,7 +298,7 @@ export function InteractiveFlashcard({ cards, onComplete }: InteractiveFlashcard
             onClick={handleReset}
             disabled={isAnimating}
             className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-700 rounded-lg hover:from-orange-200 hover:to-orange-300 transition-all transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-            aria-label="Reset all progress and start over. Use Ctrl+R as shortcut."
+            aria-label="Reset all progress and start over."
           >
             <RotateCcw size={16} aria-hidden="true" />
             <span className="hidden sm:inline">Reset</span>
@@ -385,25 +341,6 @@ export function InteractiveFlashcard({ cards, onComplete }: InteractiveFlashcard
         </div>
       )}
 
-      {/* Accessibility Help */}
-      <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-        <details className="group">
-          <summary className="cursor-pointer text-sm font-medium text-gray-700 flex items-center gap-2 hover:text-blue-600 transition-colors">
-            <span>⌨️ Keyboard Shortcuts</span>
-            <span className="text-xs text-gray-500 group-open:hidden">(Click to expand)</span>
-          </summary>
-          <div className="mt-3 text-xs text-gray-600 space-y-1">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              <div><kbd className="bg-white px-1 py-0.5 rounded border">Space</kbd> or <kbd className="bg-white px-1 py-0.5 rounded border">Enter</kbd> - Flip card</div>
-              <div><kbd className="bg-white px-1 py-0.5 rounded border">←</kbd> - Previous card</div>
-              <div><kbd className="bg-white px-1 py-0.5 rounded border">→</kbd> - Next card</div>
-              <div><kbd className="bg-white px-1 py-0.5 rounded border">Ctrl+S</kbd> - Shuffle</div>
-              <div><kbd className="bg-white px-1 py-0.5 rounded border">Ctrl+R</kbd> - Reset</div>
-              <div className="col-span-2 mt-2 text-blue-600 font-medium">💡 Use Tab to navigate between elements</div>
-            </div>
-          </div>
-        </details>
-      </div>
     </div>
   )
 }

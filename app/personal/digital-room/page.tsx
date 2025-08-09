@@ -357,6 +357,8 @@
 
 import { useState, useRef } from 'react'
 import { Users, MessageSquare, Trophy, Target, Clock, BookOpen, Folder, Tag, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star } from 'lucide-react'
+import ModularBot, { BOT_PERSONALITIES } from '@/components/ModularBot'
+import { useUser } from '@/lib/hooks/useUser'
 import DoorImage from './door.png' // adjust filename to match yours
 import ResearchGroupRoom from './ReseachGroupRoom';
 import LabGroup from './LabGroup';
@@ -386,6 +388,7 @@ interface StockImages {
 
 const DigitalRoomPage = () => {
   const [activeTab, setActiveTab] = useState('overview')
+  const { user, isAuthenticated } = useUser()
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -516,6 +519,34 @@ const DigitalRoomPage = () => {
       {activeTab === 'research' && <ResearchGroupRoom />}
       {activeTab === 'connect' && <ConnectGroup />}
       {activeTab === 'lab' && <LabGroup />}
+
+      {/* Digital Room Bot */}
+      {isAuthenticated && user && (
+        <ModularBot
+          module="digital-room"
+          userId={user.oidcSub}
+          personality={BOT_PERSONALITIES['digital-room']}
+          quickActions={[
+            {
+              id: 'create-room',
+              label: '🏠 Create Study Room',
+              action: () => alert('Creating a new study room! You can invite friends and collaborate together.')
+            },
+            {
+              id: 'find-study-group',
+              label: '👥 Find Study Group',
+              action: () => alert('Here are study groups you can join based on your courses and interests!')
+            },
+            {
+              id: 'collaboration-tips',
+              label: '🤝 Collaboration Tips',
+              action: () => alert('Tip: Use the whiteboard feature to brainstorm ideas and share your screen for presentations!')
+            }
+          ]}
+          variant="floating"
+          position="bottom-right"
+        />
+      )}
     </div>
   )
 }

@@ -18,8 +18,17 @@ model User {
   nftPoints            Int      @default(0)
   admin                Boolean  @default(false)
   isFirstTime          Boolean  @default(true)
+  role                 String   @default("student") // "student", "tutor", "admin"
   createdAt            DateTime @default(now())
   lastLogin            DateTime?
+  
+  // Relations
+  enrollments    Enrollment[]
+  homework       Homework[]
+  botStates      BotState[]
+  createdRooms   DigitalRoom[]  @relation("RoomCreator")
+  roomMemberships RoomMember[]
+  roomMessages   RoomMessage[]
 }
 
 model AuthChallenge {
@@ -31,4 +40,112 @@ model AuthChallenge {
   
   @@index([oidcSub])
   @@index([challenge])
+}
+
+model Course {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  pricePoints Int          @default(0)
+  tutorId     String?      // Optional: which user created this course
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  enrollments  Enrollment[]
+  assignments  Assignment[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  progress  Float    @default(0) // 0-100 percentage
+  enrolledAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, courseId])
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  description String?
+  dueDate     DateTime?
+  maxScore    Float    @default(100)
+  createdAt   DateTime @default(now())
+  
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  homework    Homework[]
+}
+
+model Homework {
+  id           String    @id @default(cuid())
+  assignmentId String
+  userId       String
+  completed    Boolean   @default(false)
+  score        Float?    // 0-100
+  submittedAt  DateTime?
+  content      String?   // Student's submission
+  createdAt    DateTime  @default(now())
+  
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([assignmentId, userId])
+}
+
+model BotState {
+  id        String   @id @default(cuid())
+  userId    String
+  module    String   // e.g. 'dashboard', 'course:123', 'marketplace', 'digital-room'
+  stateJson String   @default("{}") // JSON for conversation state, emoji, lastReminder, etc.
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, module])
+}
+
+model DigitalRoom {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  creatorId   String
+  isPrivate   Boolean  @default(false)
+  maxMembers  Int      @default(10)
+  createdAt   DateTime @default(now())
+  
+  creator     User           @relation("RoomCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  members     RoomMember[]
+  messages    RoomMessage[]
+}
+
+model RoomMember {
+  id       String @id @default(cuid())
+  roomId   String
+  userId   String
+  role     String @default("member") // "admin", "member"
+  joinedAt DateTime @default(now())
+  
+  room     DigitalRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([roomId, userId])
+}
+
+model RoomMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  content   String
+  messageType String @default("text") // "text", "file", "system"
+  createdAt DateTime @default(now())
+  
+  room      DigitalRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
