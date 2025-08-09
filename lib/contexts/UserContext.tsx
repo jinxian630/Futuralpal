@@ -109,6 +109,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(userReducer, initialState)
 
   const login = (user: User) => {
+    console.log('🔑 UserContext: Login called with user data:', {
+      name: user.name,
+      email: user.email,
+      address: user.address,
+      loginType: user.loginType,
+      nftPoints: user.nftPoints,
+      isFirstTime: user.isFirstTime
+    })
     dispatch({ type: 'SET_USER', payload: user })
     // Backend session is already established via HttpOnly cookie
     // No localStorage operations needed
@@ -169,6 +177,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       })
 
       console.log(`📡 Session API response: ${response.status} ${response.statusText}`)
+      console.log(`📡 Response headers:`, Object.fromEntries(response.headers.entries()))
 
       if (response.ok) {
         const result = await response.json()
@@ -189,7 +198,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           dispatch({ type: 'SET_USER', payload: result.user })
         } else {
           console.log('📋 No active session found in response')
-          dispatch({ type: 'SET_LOADING', payload: false })
+          dispatch({ type: 'LOGOUT' }) // Clear any stale state
         }
       } else {
         console.warn(`⚠️ Session check failed: ${response.status} ${response.statusText}`)
@@ -201,7 +210,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           return
         }
         
-        dispatch({ type: 'SET_LOADING', payload: false })
+        dispatch({ type: 'LOGOUT' }) // Clear any stale state on failed requests
       }
     } catch (error) {
       console.error('❌ Failed to load user from session:', {
@@ -217,7 +226,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         return
       }
       
-      dispatch({ type: 'SET_LOADING', payload: false })
+      dispatch({ type: 'LOGOUT' }) // Clear any stale state on errors
     }
   }
 

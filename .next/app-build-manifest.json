@@ -52,11 +52,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/personal/dashboard/page.js"
     ],
-    "/personal/courses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/courses/page.js"
-    ],
     "/personal/ai-tutor/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -71,41 +66,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/personal/api/update-progress/route.js"
-    ],
-    "/personal/api/tutor-chat/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/tutor-chat/route.js"
-    ],
-    "/personal/api/generate-flashcards/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/generate-flashcards/route.js"
-    ],
-    "/personal/api/generate-examples/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/generate-examples/route.js"
-    ],
-    "/personal/api/generate-step-by-step/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/generate-step-by-step/route.js"
-    ],
-    "/personal/api/generate-practice-questions/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/generate-practice-questions/route.js"
-    ],
-    "/personal/api/generate-question/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/generate-question/route.js"
-    ],
-    "/personal/api/check-answer/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/personal/api/check-answer/route.js"
     ]
   }
 }

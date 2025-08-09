@@ -215,17 +215,9 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
         address: zkResult.address
       })
 
-      // Login user through context (no localStorage - backend handles persistence)
+      // Login user through context (backend session already established via HttpOnly cookie)
       login(user)
-
-      // Force refresh session to ensure UserContext is synchronized with backend
-      console.log('🔄 Forcing session refresh for synchronization...')
-      try {
-        await forceRefreshSession()
-        console.log('✅ Session synchronization completed')
-      } catch (syncError) {
-        console.warn('⚠️ Session sync failed, but continuing with login:', syncError)
-      }
+      console.log('✅ User login completed, session already synchronized via backend')
 
       // Call success callback with the generated address
       onSuccess?.(zkResult.address)
