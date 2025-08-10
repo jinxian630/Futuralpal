@@ -1,11 +1,5 @@
 {
-  "/api/bot/effort-score/route": "app/api/bot/effort-score/route.js",
-  "/personal/api/user-progress/route": "app/personal/api/user-progress/route.js",
-  "/api/tutor/students-at-risk/route": "app/api/tutor/students-at-risk/route.js",
-  "/personal/dashboard/page": "app/personal/dashboard/page.js",
-  "/personal/marketplace/page": "app/personal/marketplace/page.js",
-  "/personal/profile/page": "app/personal/profile/page.js",
-  "/personal/tutor/page": "app/personal/tutor/page.js",
-  "/personal/courses/page": "app/personal/courses/page.js",
-  "/personal/digital-room/page": "app/personal/digital-room/page.js"
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/page": "app/page.js"
 }
