@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { Search, Bell, ChevronLeft, ChevronRight, Clock, Users, Award, BookOpen, TrendingUp, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import StatsCard from '@/components/StatsCard'
@@ -13,6 +13,21 @@ import { useUser } from '@/lib/hooks/useUser'
 import { generateAvatarFromAddress } from '@/lib/utils/wallet'
 
 const Dashboard = () => {
+  return (
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
+  )
+}
+
+const DashboardContent = () => {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())

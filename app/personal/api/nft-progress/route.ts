@@ -99,7 +99,7 @@ const ACHIEVEMENT_DEFINITIONS: Omit<LearningAchievement, 'earned' | 'earnedAt'>[
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId') || 'default_user'
+    const userId = searchParams?.get('userId') || 'default_user'
     
     // In a real app, fetch from database
     const userProgress = getUserProgress(userId)

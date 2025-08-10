@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'OpenRouter service is accessible and ready',
-      model: result.model,
+      model: result,
       status: 'connected',
       service: 'OpenRouter',
       provider: 'Google Gemini 2.5 Flash'

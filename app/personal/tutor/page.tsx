@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Upload, Plus, Settings, BookOpen, Users, AlertTriangle } from 'lucide-react'
 import TutorDashboard from '@/components/TutorDashboard'
@@ -8,8 +8,22 @@ import ModularBot, { BOT_PERSONALITIES } from '@/components/ModularBot'
 import { useUser } from '@/lib/hooks/useUser'
 
 const TutorPage = () => {
-  const searchParams = useSearchParams()
-  const walletAddress = searchParams.get('address')
+  return (
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Loading tutor dashboard...</p>
+        </div>
+      </div>
+    }>
+      <TutorPageContent />
+    </Suspense>
+  )
+}
+
+const TutorPageContent = () => {
+
   const { user, isAuthenticated, isLoading } = useUser()
   const [activeView, setActiveView] = useState<'dashboard' | 'assignments' | 'upload'>('dashboard')
 

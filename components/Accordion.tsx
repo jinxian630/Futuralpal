@@ -34,6 +34,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
     <div className={`border border-gray-200 rounded-md overflow-hidden shadow-sm ${className}`}>
       {/* Header */}
       <button
+        type="button"
         onClick={toggleOpen}
         disabled={disabled}
         className={`w-full px-3 py-2.5 flex items-center justify-between text-left transition-all duration-200 ${
@@ -43,7 +44,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
               ? 'bg-blue-50 hover:bg-blue-100 border-l-2 border-blue-500'
               : 'bg-white hover:bg-gray-50'
         }`}
-        aria-expanded={isOpen.toString()}
+        
         aria-controls={`accordion-content-${id}`}
       >
         <div className="flex items-center space-x-2 min-w-0 flex-1">

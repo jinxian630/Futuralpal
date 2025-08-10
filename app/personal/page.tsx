@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Upload, Brain, BarChart3, DollarSign, Home, ShoppingBag, Palette } from 'lucide-react';
 import header_logo from "@/app/personal/Picture/header_logo.jpg";
@@ -49,7 +49,22 @@ const AnimatedRoomCard = () => {
   );
 };
 
-const FuturopalWebsite = () => {
+const PersonalPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <PersonalPageContent />
+    </Suspense>
+  );
+};
+
+const PersonalPageContent = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -295,4 +310,4 @@ const FuturopalWebsite = () => {
   );
 };
 
-export default FuturopalWebsite;
+export default PersonalPage;

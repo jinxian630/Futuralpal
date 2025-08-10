@@ -1,11 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { User, Wallet, Copy, ExternalLink, Edit3, Save, X, Shield, Calendar, Mail, Trophy, Star } from 'lucide-react'
 import { useUser } from '@/lib/hooks/useUser'
 import { formatSuiAddress, getSuiExplorerUrl, copyToClipboard, formatTimestamp, getTimeAgo } from '@/lib/utils/wallet'
 
 const ProfilePage = () => {
+  return (
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
+  )
+}
+
+const ProfileContent = () => {
   const { user, updateUser, isAuthenticated } = useUser()
   const [isEditing, setIsEditing] = useState(false)
   const [showCopied, setShowCopied] = useState(false)

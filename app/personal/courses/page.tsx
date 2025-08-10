@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { Search, Filter, BookOpen, Clock, Star, Users, TrendingUp, CheckCircle, Play, Award } from 'lucide-react'
 import StatsCard from '@/components/StatsCard'
 import CourseCard from '@/components/CourseCard'
@@ -9,8 +9,23 @@ import ModularBot, { BOT_PERSONALITIES } from '@/components/ModularBot'
 import { useUser } from '@/lib/hooks/useUser'
 
 const CoursesPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Loading courses...</p>
+        </div>
+      </div>
+    }>
+      <CoursesContent />
+    </Suspense>
+  )
+}
+
+const CoursesContent = () => {
   const searchParams = useSearchParams();
-  const walletAddress = searchParams.get('address');
+  const walletAddress = searchParams?.get('address');
   const { user, isAuthenticated } = useUser()
 
   const [searchQuery, setSearchQuery] = useState('')

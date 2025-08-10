@@ -8,8 +8,8 @@ const prisma = new PrismaClient() as any // Temporary fix for type issues
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const courseId = searchParams.get('courseId')
-    const userId = searchParams.get('userId') // Optional: to include homework status
+    const courseId = searchParams?.get('courseId')
+    const userId = searchParams?.get('userId') // Optional: to include homework status
 
     if (!courseId) {
       return NextResponse.json({ error: 'courseId is required' }, { status: 400 })
@@ -134,7 +134,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
+    const id = searchParams?.get('id')
 
     if (!id) {
       return NextResponse.json({ error: 'Assignment id is required' }, { status: 400 })

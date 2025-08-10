@@ -4,7 +4,7 @@ import { getUserProgress } from '@/lib/file-storage'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId') || 'default'
+    const userId = searchParams?.get('userId') || 'default'
 
     // Load progress from file storage
     const progress = getUserProgress(userId)

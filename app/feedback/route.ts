@@ -136,10 +136,10 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url)
-    const type = url.searchParams.get('type')
-    const userId = url.searchParams.get('userId')
-    const sessionId = url.searchParams.get('sessionId')
-    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const type = url.searchParams?.get('type')
+    const userId = url.searchParams?.get('userId')
+    const sessionId = url.searchParams?.get('sessionId')
+    const limit = parseInt(url.searchParams?.get('limit') || '50')
     
     let filteredFeedback = feedbackStorage
     

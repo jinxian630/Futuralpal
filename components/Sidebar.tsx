@@ -28,7 +28,7 @@ import { Teachers } from 'next/font/google';
 
 const Sidebar = () => {
   const searchParams = useSearchParams();
-  const walletAddress = searchParams.get('address');
+  const walletAddress = searchParams?.get('address');
 
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)

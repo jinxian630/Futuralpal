@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { MessageSquare, Send, BookOpen, Target, Zap, Brain, Award, TrendingUp, CheckCircle, XCircle, Star, Settings, Activity, Trophy, Flame, Coffee, ThumbsUp, ThumbsDown, Heart, Lightbulb, Palette, Menu, X } from 'lucide-react'
 import { aiAgent, Question } from '@/lib/ai-agent'
 import { TeachingStyle, LearningStyle } from '@/lib/types/student'
@@ -29,6 +29,21 @@ interface StudySession {
 }
 
 const AITutorPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Loading AI Tutor...</p>
+        </div>
+      </div>
+    }>
+      <AITutorContent />
+    </Suspense>
+  )
+}
+
+const AITutorContent = () => {
   const [userMessage, setUserMessage] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [originalStudentPrompt, setOriginalStudentPrompt] = useState<string>('')
@@ -407,7 +422,7 @@ const AITutorPage = () => {
     
     setTimeout(() => {
       setConversation(prev => [...prev, welcomeResponse])
-      addXP(10, 'selecting a topic')
+      addXP(10)
       updateSessionProgress('topic_explored', topic.title)
     }, 500)
   }
@@ -536,7 +551,7 @@ const AITutorPage = () => {
         setShowAnswer(false)
         setUserAnswer('')
         
-        addXP(5, 'generating a question')
+        addXP(5)
       } else {
         const errorMessage = {
           role: 'assistant' as const,
@@ -704,7 +719,7 @@ ${result.message ? `\n💬 ${result.message}` : ''}`
         
         setConversation(prev => [...prev, fallbackMessage])
         setShowAnswer(true)
-        addXP(5, 'attempting to answer (system issues)')
+        addXP(5)
       } else {
         throw new Error(result.error || 'Failed to check answer')
       }
@@ -736,7 +751,7 @@ Technical details: ${errorMsg}`,
       setConversation(prev => [...prev, errorMessage])
       
       // Still award some participation XP
-      addXP(3, 'attempting to answer')
+      addXP(3)
     } finally {
       setIsGenerating(false)
     }
@@ -892,7 +907,7 @@ Technical details: ${errorMsg}`,
         }
         
         setConversation(prev => [...prev, tutorMessage])
-        addXP(result.gamification?.xpGained || 3, 'engaging in conversation')
+        addXP(result.gamification?.xpGained || 3)
         
         // Show progress message if available
         const progressMsg = getProgressMessage()
@@ -984,7 +999,7 @@ Technical details: ${errorMsg}`,
           }
         }
         setConversation(prev => [...prev, examplesMessage])
-        addXP(20, 'generating helpful examples')
+        addXP(20)
       } else {
         console.warn('❌ getMoreExamples failed:', result)
         const errorMessage = {
@@ -1063,7 +1078,7 @@ Technical details: ${errorMsg}`,
           }
         }
         setConversation(prev => [...prev, flashcardsMessage])
-        addXP(25, 'creating study flashcards')
+        addXP(25)
       } else {
         console.warn('❌ createFlashcards failed:', result)
         const errorMessage = {
@@ -1138,7 +1153,7 @@ Technical details: ${errorMsg}`,
           }
         }
         setConversation(prev => [...prev, questionsMessage])
-        addXP(30, 'generating practice questions')
+        addXP(30)
       } else {
         console.warn('❌ generatePracticeQuestions failed:', result)
         const errorMessage = {
@@ -1281,7 +1296,7 @@ Technical details: ${errorMsg}`,
         }
       }
       setConversation(prev => [...prev, flashcardsMessage])
-      addXP(25, 'creating custom flashcards')
+      addXP(25)
     } else {
       const errorMessage = {
         role: 'assistant' as const,
@@ -1321,7 +1336,7 @@ Technical details: ${errorMsg}`,
         }
       }
       setConversation(prev => [...prev, examplesMessage])
-      addXP(20, 'generating custom examples')
+      addXP(20)
     } else {
       const errorMessage = {
         role: 'assistant' as const,
@@ -1363,7 +1378,7 @@ Technical details: ${errorMsg}`,
         }
       }
       setConversation(prev => [...prev, questionsMessage])
-      addXP(30, 'generating custom practice questions')
+      addXP(30)
     } else {
       const errorMessage = {
         role: 'assistant' as const,
@@ -1405,7 +1420,7 @@ Technical details: ${errorMsg}`,
         }
       }
       setConversation(prev => [...prev, stepByStepMessage])
-      addXP(25, 'creating custom step-by-step guide')
+      addXP(25)
     } else {
       const errorMessage = {
         role: 'assistant' as const,
@@ -1468,7 +1483,7 @@ Technical details: ${errorMsg}`,
           }
         }
         setConversation(prev => [...prev, stepByStepMessage])
-        addXP(25, 'generating step-by-step guide')
+        addXP(25)
       } else {
         console.warn('❌ generateStepByStepGuide failed:', result)
         const errorMessage = {

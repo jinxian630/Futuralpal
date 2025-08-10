@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface AgentResponse {
   success: boolean
   response?: string

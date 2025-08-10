@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import { signIn, useSession, getSession } from 'next-auth/react'

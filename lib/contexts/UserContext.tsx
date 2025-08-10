@@ -4,6 +4,8 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import { signOut } from 'next-auth/react'
 
 export interface User {
+  id: string
+  oidcSub: string
   address: string
   name: string
   email?: string

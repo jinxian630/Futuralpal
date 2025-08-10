@@ -7,8 +7,8 @@ const prisma = new PrismaClient() as any // Temporary fix for type issues
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const module = searchParams.get('module')
-    const userId = searchParams.get('userId')
+    const module = searchParams?.get('module')
+    const userId = searchParams?.get('userId')
 
     if (!module || !userId) {
       return NextResponse.json(

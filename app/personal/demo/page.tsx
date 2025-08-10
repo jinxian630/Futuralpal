@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { 
   Bot, 
   Users, 
@@ -17,6 +17,21 @@ import { useUser } from '@/lib/hooks/useUser'
 import { useRouter } from 'next/navigation'
 
 const DemoPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Loading demo page...</p>
+        </div>
+      </div>
+    }>
+      <DemoPageContent />
+    </Suspense>
+  )
+}
+
+function DemoPageContent() {
   const { user, isAuthenticated } = useUser()
   const router = useRouter()
   const [demoStep, setDemoStep] = useState(0)

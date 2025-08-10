@@ -180,7 +180,7 @@ INSTRUCTIONAL QUALITY STANDARDS:
     console.error('Personal API - Generate step-by-step guide error:', error)
     
     let errorMessage = 'Failed to generate step-by-step guide'
-    let fallbackMessage = `I'm having trouble creating a step-by-step guide right now. Here's a manual approach for learning ${topic}:\n\n📋 **DIY Step-by-Step Learning:**\n• Break the topic into smaller parts\n• Start with basics and build up\n• Practice each step before moving on\n• Use examples and analogies\n• Test your understanding regularly\n\n💡 I'll be ready to create a detailed guide when the connection is restored!`
+    let fallbackMessage = `I'm having trouble creating a step-by-step guide right now. Here's a manual approach for learning :\n\n📋 **DIY Step-by-Step Learning:**\n• Break the topic into smaller parts\n• Start with basics and build up\n• Practice each step before moving on\n• Use examples and analogies\n• Test your understanding regularly\n\n💡 I'll be ready to create a detailed guide when the connection is restored!`
     
     if (error instanceof Error) {
       errorMessage = error.message
