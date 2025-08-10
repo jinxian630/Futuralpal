@@ -1,4 +1,3 @@
-import UploadForm from '@/components/UploadForm'
 
 export default function TestUploadPage() {
   return (
@@ -13,9 +12,7 @@ export default function TestUploadPage() {
           </p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <UploadForm />
-        </div>
+
         
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-blue-900 mb-3">

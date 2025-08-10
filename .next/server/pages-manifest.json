@@ -1,1 +1,7 @@
-{}
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/api/auth/logout": "pages/api/auth/logout.js",
+  "/auth-debug": "pages/auth-debug.js",
+  "/_document": "pages/_document.js"
+}
