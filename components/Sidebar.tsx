@@ -3,7 +3,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import header_logo from "@/app/personal/Picture/header_logo.jpg";
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { formatAddress } from '@/lib/formatAddress';
@@ -24,11 +24,28 @@ import {
 } from 'lucide-react'
 import { Teachers } from 'next/font/google';
 
-
-
-const Sidebar = () => {
+const SearchParamsHandler = () => {
   const searchParams = useSearchParams();
   const walletAddress = searchParams?.get('address');
+  
+  return <SidebarContent walletAddress={walletAddress} />
+}
+
+const Sidebar = () => {
+  return (
+    <Suspense fallback={
+      <div className="w-64 bg-primary-700 text-white flex flex-col shadow-lg">
+        <div className="p-4 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    }>
+      <SearchParamsHandler />
+    </Suspense>
+  )
+}
+
+const SidebarContent = ({ walletAddress }: { walletAddress: string | null }) => {
 
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)

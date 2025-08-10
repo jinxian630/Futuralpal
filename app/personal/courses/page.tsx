@@ -8,6 +8,13 @@ import CourseCard from '@/components/CourseCard'
 import ModularBot, { BOT_PERSONALITIES } from '@/components/ModularBot'
 import { useUser } from '@/lib/hooks/useUser'
 
+const SearchParamsHandler = () => {
+  const searchParams = useSearchParams();
+  const walletAddress = searchParams?.get('address');
+  
+  return <CoursesContent walletAddress={walletAddress} />
+}
+
 const CoursesPage = () => {
   return (
     <Suspense fallback={
@@ -18,14 +25,12 @@ const CoursesPage = () => {
         </div>
       </div>
     }>
-      <CoursesContent />
+      <SearchParamsHandler />
     </Suspense>
   )
 }
 
-const CoursesContent = () => {
-  const searchParams = useSearchParams();
-  const walletAddress = searchParams?.get('address');
+const CoursesContent = ({ walletAddress }: { walletAddress: string | null }) => {
   const { user, isAuthenticated } = useUser()
 
   const [searchQuery, setSearchQuery] = useState('')
