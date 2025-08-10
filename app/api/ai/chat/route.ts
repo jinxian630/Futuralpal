@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { openai } from '@/lib/openai-config'
+import { getOpenAI } from '@/lib/openai-config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create completion using OpenAI
+    const openai = getOpenAI()
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: messages,

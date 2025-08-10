@@ -1,8 +1,18 @@
 import OpenAI from 'openai'
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+let _openai: OpenAI | null = null
+
+export const getOpenAI = (): OpenAI => {
+  if (!_openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: "My API Key" }).')
+    }
+    _openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return _openai
+}
 
 export async function callOpenAI(messages: any[], max_tokens = 400) {
   if (!process.env.OPENAI_API_KEY) throw new Error('Missing OPENAI_API_KEY')

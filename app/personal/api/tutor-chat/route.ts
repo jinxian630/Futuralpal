@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PROMPTS } from '@/lib/ai-agent'
-import { openai } from '@/lib/openai-config'
+import { getOpenAI } from '@/lib/openai-config'
 
 // Enhanced AI Tutor imports
 import { 
@@ -193,6 +193,7 @@ Respond as a patient, understanding teacher who genuinely cares about student su
       topicTags: topicTags.tags
     })
 
+    const openai = getOpenAI()
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
