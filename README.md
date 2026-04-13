@@ -20,8 +20,7 @@ Instead of passively reading notes, students can:
 
 ## 🎥 Demo
 
-🚧 Coming Soon  
-_(Tip: Add a 30–60 sec demo video or GIF here — this is HUGE for judges)_
+https://www.youtube.com/watch?v=mH_UKI_EhUg
 
 ---
 
